@@ -1,0 +1,400 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ── 인트로 오버레이 ── */
+#intro-overlay {
+  position: fixed;
+  inset: 0;
+  background: #1a1a1a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  cursor: pointer;
+  transition: opacity 0.5s ease;
+}
+
+#intro-overlay.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#intro-video {
+  max-width: 320px;
+  max-height: 70vh;
+  border-radius: 20px;
+}
+
+.intro-skip-btn {
+  background: #7cc47c;
+  color: white;
+  border: none;
+  border-radius: 14px;
+  padding: 14px 36px;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  margin-top: 24px;
+}
+
+/* ── 축하 오버레이 ── */
+#celebrate-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  gap: 16px;
+}
+
+#celebrate-overlay.hidden {
+  display: none;
+}
+
+#celebrate-video {
+  max-width: 300px;
+  max-height: 60vh;
+  border-radius: 20px;
+}
+
+.celebrate-msg {
+  color: white;
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.celebrate-close {
+  background: #7cc47c;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 28px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+body {
+  font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  background: #f0f7f0;
+  color: #333;
+  max-width: 480px;
+  margin: 0 auto;
+  padding-bottom: 40px;
+}
+
+/* 헤더 */
+header {
+  background: linear-gradient(135deg, #7cc47c, #5aab5a);
+  padding: 20px 16px;
+  border-radius: 0 0 24px 24px;
+  box-shadow: 0 4px 12px rgba(90, 171, 90, 0.3);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.header-duck {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 3px solid white;
+  object-fit: cover;
+  background: #e8f5e8;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.header-duck.duck-switch {
+  opacity: 0;
+  transform: scale(0.85);
+}
+
+.header-text h1 {
+  color: white;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.header-text p {
+  color: rgba(255,255,255,0.85);
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+/* 폭덕이 말풍선 */
+.speech-section {
+  padding: 16px 16px 0;
+}
+
+.speech-bubble {
+  background: white;
+  border-radius: 16px;
+  padding: 14px 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border-left: 4px solid #7cc47c;
+  position: relative;
+}
+
+.speech-bubble p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #444;
+}
+
+/* 카드 */
+.card {
+  background: white;
+  border-radius: 20px;
+  margin: 14px 16px 0;
+  padding: 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+
+.card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.card-profile-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #7cc47c;
+  background: #e8f5e8;
+}
+
+.card h2,
+.card-title-row h2 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 0;
+}
+
+.card h2 {
+  margin-bottom: 14px;
+}
+
+/* 오늘 일정 리스트 */
+.schedule-list {
+  list-style: none;
+}
+
+.schedule-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+}
+
+.schedule-list li:last-child {
+  border-bottom: none;
+}
+
+.schedule-time {
+  font-weight: 600;
+  color: #5aab5a;
+  min-width: 50px;
+  font-size: 13px;
+}
+
+.schedule-empty {
+  color: #aaa;
+  font-size: 14px;
+  padding: 8px 0;
+}
+
+/* 할 일 입력 */
+.task-input-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.task-input-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 12px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 13px;
+  outline: none;
+  font-family: inherit;
+}
+
+.task-input-row input:focus {
+  border-color: #7cc47c;
+}
+
+.task-input-row select {
+  padding: 9px 8px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 13px;
+  outline: none;
+  font-family: inherit;
+  background: white;
+  cursor: pointer;
+}
+
+.task-input-row button {
+  padding: 9px 16px;
+  background: #7cc47c;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s;
+}
+
+.task-input-row button:hover {
+  background: #5aab5a;
+}
+
+/* 할 일 목록 */
+.task-list {
+  list-style: none;
+}
+
+.task-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid #f5f5f5;
+  font-size: 14px;
+}
+
+.task-list li:last-child {
+  border-bottom: none;
+}
+
+.task-list li.done .task-text {
+  text-decoration: line-through;
+  color: #bbb;
+}
+
+.task-check {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #ccc;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  background: white;
+}
+
+.task-check.checked {
+  background: #7cc47c;
+  border-color: #7cc47c;
+  color: white;
+  font-size: 11px;
+}
+
+.task-text {
+  flex: 1;
+}
+
+.task-cat {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.cat-영어 { background: #fff0d6; color: #d4860a; }
+.cat-드럼 { background: #fde8f0; color: #c0397a; }
+.cat-필라테스 { background: #e8f0ff; color: #3a5fc0; }
+.cat-사운드 { background: #f0e8ff; color: #7a3ac0; }
+.cat-기타 { background: #f0f0f0; color: #666; }
+
+.task-delete {
+  color: #ddd;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0 4px;
+  transition: color 0.2s;
+}
+
+.task-delete:hover {
+  color: #ff6b6b;
+}
+
+/* 주간 그리드 */
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.day-box {
+  background: #f8f8f8;
+  border-radius: 12px;
+  padding: 8px 4px;
+  text-align: center;
+}
+
+.day-box.today {
+  background: #e8f5e8;
+  border: 2px solid #7cc47c;
+}
+
+.day-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #555;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.day-box.today .day-label {
+  color: #5aab5a;
+}
+
+.day-items {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tag {
+  font-size: 9px;
+  padding: 2px 3px;
+  border-radius: 4px;
+  font-weight: 600;
+  display: block;
+}
+
+.tag-english  { background: #fff0d6; color: #c07800; }
+.tag-pilates  { background: #e8f0ff; color: #3a5fc0; }
+.tag-drum     { background: #fde8f0; color: #c0397a; }
+.tag-sound    { background: #f0e8ff; color: #7a3ac0; }
+.tag-work     { background: #fff0f0; color: #c04040; }
+.tag-free     { background: #e8f5e8; color: #5aab5a; }
+.tag-rest     { background: #f5f5f5; color: #999; }
