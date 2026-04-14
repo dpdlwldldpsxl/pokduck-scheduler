@@ -1,0 +1,24 @@
+{
+  "name": "폭덕이의 스케줄러",
+  "short_name": "폭덕이",
+  "description": "폭덕이와 같이 스케줄짜기 - AI 뇌과학 스케줄링",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f0f7f0",
+  "theme_color": "#7cc47c",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/images/pokduck_default.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/pokduck_default.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
