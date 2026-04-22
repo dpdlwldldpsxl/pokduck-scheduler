@@ -84,6 +84,13 @@ export default async function handler(req, res) {
       .select('text, category, is_done')
       .eq('user_id', user.id)
 
+    const { data: studyNotes } = await supabase
+      .from('study_notes')
+      .select('title, content, studied_at, next_review, review_count, academies(name)')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(10)
+
     const { data: profile } = await supabase
       .from('profiles')
       .select('display_name')
@@ -127,7 +134,12 @@ ${scheduleText}
 [할 일 목록]
 ${tasksText}
 
-위 정보를 바탕으로 이 사용자에게 맞춤형으로 대화하세요.`
+[최근 학습 메모]
+${studyNotes?.length > 0
+  ? studyNotes.map((n) => `${n.academies?.name || '기타'} (${n.studied_at}): ${n.title}${n.content ? ' - ' + n.content : ''} [복습 ${n.review_count}회, 다음 복습: ${n.next_review}]`).join('\n')
+  : '학습 메모 없음'}
+
+위 정보를 바탕으로 이 사용자에게 맞춤형으로 대화하세요. 학습 메모가 있으면 배운 내용을 활용해서 복습을 도와주세요.`
 
     // 유저 메시지 저장
     await supabase.from('coaching_messages').insert({
