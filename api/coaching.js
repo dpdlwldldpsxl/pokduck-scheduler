@@ -16,7 +16,7 @@ const SYSTEM_PROMPT = `당신은 "폭덕이"라는 AI 라이프 코치 캐릭터
 - 자유 대화: 편하게 수다, 고민 상담
 
 규칙:
-- 한국어로 대화
+- 반드시 한국어로 대화
 - 답변은 간결하게 (3~5문장 정도)
 - 너무 길게 설명하지 말 것
 - 사용자의 현재 일정/컨텍스트를 참고하여 맞춤 조언`
@@ -46,7 +46,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 대화 기록 불러오기 (최근 20개)
     const { data: history } = await supabase
       .from('coaching_messages')
       .select('role, content')
@@ -54,7 +53,6 @@ export default async function handler(req, res) {
       .order('created_at', { ascending: true })
       .limit(20)
 
-    // 유저 컨텍스트 불러오기
     const { data: scheduleItems } = await supabase
       .from('schedule_items')
       .select('title, day_of_week, start_time, end_time, academies(name)')
@@ -92,12 +90,6 @@ ${scheduleText}
 [할 일 목록]
 ${tasksText}`
 
-    // Gemini API 메시지 형식으로 변환
-    const geminiHistory = (history || []).map((m) => ({
-      role: m.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: m.content }],
-    }))
-
     // 유저 메시지 저장
     await supabase.from('coaching_messages').insert({
       conversation_id: conversationId,
@@ -105,30 +97,31 @@ ${tasksText}`
       content: message,
     })
 
-    // Gemini API 호출
-    const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          system_instruction: { parts: [{ text: contextPrompt }] },
-          contents: [
-            ...geminiHistory,
-            { role: 'user', parts: [{ text: message }] },
-          ],
-        }),
-      }
-    )
+    // OpenRouter API 호출
+    const apiRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'minimax/minimax-m2.5:free',
+        messages: [
+          { role: 'system', content: contextPrompt },
+          ...(history || []).map((m) => ({ role: m.role, content: m.content })),
+          { role: 'user', content: message },
+        ],
+      }),
+    })
 
-    const geminiData = await geminiRes.json()
+    const data = await apiRes.json()
 
-    if (!geminiRes.ok) {
-      console.error('Gemini error:', geminiData)
+    if (!apiRes.ok) {
+      console.error('OpenRouter error:', data)
       return res.status(500).json({ error: '폭덕이가 잠시 쉬고 있어요...' })
     }
 
-    const assistantContent = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '...'
+    const assistantContent = data.choices?.[0]?.message?.content || '...'
 
     // 어시스턴트 메시지 저장
     await supabase.from('coaching_messages').insert({
