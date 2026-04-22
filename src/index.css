@@ -1283,7 +1283,7 @@ header {
   color: #888;
 }
 
-/* 시간 선택기 (구글 캘린더 스타일) */
+/* 시간 선택기 */
 .tp-container {
   position: relative;
 }
@@ -1320,42 +1320,91 @@ header {
   color: #999;
 }
 
-.tp-dropdown {
+.tp-popup {
   position: absolute;
   top: 100%;
   left: 0;
   right: 0;
-  max-height: 200px;
-  overflow-y: auto;
   background: white;
   border: 1.5px solid #e0e0e0;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
   z-index: 20;
   margin-top: 4px;
+  padding: 10px;
 }
 
-.tp-option {
-  width: 100%;
-  padding: 10px 14px;
-  border: none;
+.tp-period-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.tp-period {
+  flex: 1;
+  padding: 8px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  color: #888;
+}
+
+.tp-period.active {
+  background: #7cc47c;
+  border-color: #7cc47c;
+  color: white;
+}
+
+.tp-selectors {
+  display: flex;
+  gap: 12px;
+}
+
+.tp-col {
+  flex: 1;
+}
+
+.tp-col-label {
+  font-size: 11px;
+  color: #aaa;
+  display: block;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.tp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+
+.tp-cell {
+  padding: 8px 0;
+  border: 1px solid #eee;
+  border-radius: 8px;
   background: white;
   font-size: 14px;
-  font-family: inherit;
   cursor: pointer;
-  text-align: left;
+  font-family: inherit;
   color: #333;
-  transition: background 0.1s;
+  text-align: center;
+  transition: all 0.15s;
 }
 
-.tp-option:hover {
+.tp-cell:hover {
   background: #f0f7f0;
+  border-color: #7cc47c;
 }
 
-.tp-option.tp-selected {
-  background: #e8f5e8;
-  color: #5aab5a;
-  font-weight: 600;
+.tp-cell.active {
+  background: #7cc47c;
+  border-color: #7cc47c;
+  color: white;
+  font-weight: 700;
 }
 
 /* 요일별 일정 목록 */
