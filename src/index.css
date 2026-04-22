@@ -822,6 +822,31 @@ header {
   color: #aaa;
 }
 
+.note-assist-toggle {
+  display: block;
+  margin-top: 6px;
+  padding: 6px 0;
+  background: none;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: #7cc47c;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.note-assist-content {
+  margin-top: 8px;
+  padding: 12px;
+  background: #f6fef6;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #444;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  border: 1px solid #d4ead4;
+}
+
 /* 메모 필터 */
 .note-filters {
   display: flex;

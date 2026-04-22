@@ -34,6 +34,12 @@ export function useStudyNotes() {
       .insert({ user_id: user.id, title, content, academy_id: academyId || null, studied_at: studiedAt, next_review: nextReview })
       .select('*, academies(name, icon, color)')
     if (data) setNotes((prev) => [data[0], ...prev])
+    return data?.[0]
+  }
+
+  const updateAssist = async (noteId, assistContent) => {
+    await supabase.from('study_notes').update({ ai_assist: assistContent }).eq('id', noteId)
+    setNotes((prev) => prev.map((n) => n.id === noteId ? { ...n, ai_assist: assistContent } : n))
   }
 
   const markReviewed = async (note) => {
@@ -55,7 +61,7 @@ export function useStudyNotes() {
   const today = new Date().toISOString().split('T')[0]
   const dueForReview = notes.filter((n) => n.next_review && n.next_review <= today)
 
-  return { notes, dueForReview, add, markReviewed, remove, reload: load }
+  return { notes, dueForReview, add, updateAssist, markReviewed, remove, reload: load }
 }
 
 export function useHabits() {

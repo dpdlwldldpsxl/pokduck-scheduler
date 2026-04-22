@@ -12,7 +12,8 @@ export default function GoalsPage() {
   const [tab, setTab] = useState('메모')
   const { playSfx } = useSound()
   const { academies } = useAcademies()
-  const { notes, dueForReview, add: addNote, markReviewed, remove: removeNote } = useStudyNotes()
+  const { notes, dueForReview, add: addNote, updateAssist, markReviewed, remove: removeNote } = useStudyNotes()
+  const [expandedAssist, setExpandedAssist] = useState({})
   const { habits, todayLogs, streaks, allDoneToday, add: addHabit, toggle: toggleHabit, remove: removeHabit } = useHabits()
   const { goals, add: addGoal, toggleComplete, remove: removeGoal } = useGoals()
 
@@ -47,12 +48,15 @@ export default function GoalsPage() {
         break
       }
     }
-    await addNote(text, '', matchedAcademy)
+    const savedNote = await addNote(text, '', matchedAcademy)
     setQuickNote('')
 
-    // AI 학습 연계 자료 생성
-    setAssistLoading(true)
+    if (!savedNote) return
+
+    // AI 학습 연계 자료 생성 → 해당 메모에 저장
     setStudyAssist('폭덕이가 학습 자료 만드는 중... 🦆')
+    setAssistLoading(true)
+    setExpandedAssist((prev) => ({ ...prev, [savedNote.id]: true }))
     try {
       const { data: { session } } = await supabase.auth.getSession()
       const res = await fetch('/api/study-assist', {
@@ -64,17 +68,13 @@ export default function GoalsPage() {
         body: JSON.stringify({ noteText: text }),
       })
       const data = await res.json()
-      if (res.ok) {
+      if (res.ok && data.content) {
         playSfx('receive')
-        setStudyAssist(data.content)
-      } else {
-        setStudyAssist(null)
+        await updateAssist(savedNote.id, data.content)
       }
-    } catch {
-      setStudyAssist(null)
-    } finally {
-      setAssistLoading(false)
-    }
+    } catch {}
+    setStudyAssist(null)
+    setAssistLoading(false)
   }
 
   const handleAddHabit = async () => {
@@ -140,15 +140,13 @@ export default function GoalsPage() {
             </div>
             <p style={{ fontSize: '11px', color: '#bbb', marginTop: '4px' }}>학원 이름 포함하면 자동 분류! (예: "영어에서 ~~")</p>
 
-            {studyAssist && (
+            {assistLoading && studyAssist && (
               <div className="study-assist-card">
-                <div className="study-assist-header" onClick={() => !assistLoading && setAssistOpen(!assistOpen)}>
+                <div className="study-assist-header">
                   <img src="/images/pokduck_default.png" alt="폭덕이" className="suggestion-avatar" />
-                  <span className="study-assist-title">{assistLoading ? '분석 중...' : '폭덕이의 학습 연계'}</span>
-                  {!assistLoading && <span className="study-assist-toggle">{assistOpen ? '접기 ▲' : '펼치기 ▼'}</span>}
-                  {!assistLoading && <button className="study-assist-close" onClick={(e) => { e.stopPropagation(); setStudyAssist(null) }}>×</button>}
+                  <span className="study-assist-title">분석 중...</span>
                 </div>
-                {assistOpen && <div className="study-assist-content">{studyAssist}</div>}
+                <div className="study-assist-content">{studyAssist}</div>
               </div>
             )}
 
@@ -183,6 +181,16 @@ export default function GoalsPage() {
                 <p className="note-review-info">
                   복습 {note.review_count || 0}회 | 다음 복습: {note.next_review ? new Date(note.next_review).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }) : '-'}
                 </p>
+                {note.ai_assist && (
+                  <>
+                    <button className="note-assist-toggle" onClick={() => setExpandedAssist((prev) => ({ ...prev, [note.id]: !prev[note.id] }))}>
+                      🦆 학습 연계 {expandedAssist[note.id] ? '접기 ▲' : '보기 ▼'}
+                    </button>
+                    {expandedAssist[note.id] && (
+                      <div className="note-assist-content">{note.ai_assist}</div>
+                    )}
+                  </>
+                )}
               </div>
             ))}
                 {filtered.length > 5 && (
