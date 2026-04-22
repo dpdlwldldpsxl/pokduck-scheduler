@@ -64,8 +64,12 @@ export default function CoachingPage() {
     setSending(true)
     playSfx('click')
 
+    // UI 먼저 즉시 반영
     addLocal('user', text)
     addLocal('assistant', '폭덕이가 생각하는 중... 🦆')
+
+    // 다음 틱에서 네트워크 작업 (UI가 먼저 그려지도록)
+    await new Promise((r) => setTimeout(r, 50))
 
     try {
       // 첫 메시지일 때 대화 생성
