@@ -95,7 +95,7 @@ body {
   color: #333;
   max-width: 480px;
   margin: 0 auto;
-  padding-bottom: 40px;
+  padding-bottom: 80px;
 }
 
 /* 헤더 */
@@ -490,3 +490,93 @@ header {
 .tag-work     { background: #fff0f0; color: #c04040; }
 .tag-free     { background: #e8f5e8; color: #5aab5a; }
 .tag-rest     { background: #f5f5f5; color: #999; }
+
+/* 로그인 페이지 */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: #f0f7f0;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.login-duck {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 3px solid #7cc47c;
+  object-fit: cover;
+  background: #e8f5e8;
+  margin-bottom: 12px;
+}
+
+.login-header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #333;
+}
+
+.login-header p {
+  font-size: 14px;
+  color: #888;
+  margin-top: 4px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 380px;
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+/* 하단 네비게이션 */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  background: white;
+  border-top: 1px solid #e8e8e8;
+  padding: 6px 0 env(safe-area-inset-bottom, 8px);
+  z-index: 50;
+}
+
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  color: #aaa;
+  transition: color 0.2s;
+}
+
+.bottom-nav-item.active {
+  color: #7cc47c;
+}
+
+.bottom-nav-icon {
+  font-size: 20px;
+}
+
+.bottom-nav-label {
+  font-size: 10px;
+  font-weight: 600;
+}
