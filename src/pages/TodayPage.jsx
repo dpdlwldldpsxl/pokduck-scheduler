@@ -21,6 +21,10 @@ export default function TodayPage() {
 
   useEffect(() => {
     playBgm('main')
+    if (sessionStorage.getItem('pokduck-just-logged-in')) {
+      sessionStorage.removeItem('pokduck-just-logged-in')
+      setTimeout(() => playSfx('login'), 500)
+    }
   }, [])
 
   const [profile, setProfile] = useState(null)
