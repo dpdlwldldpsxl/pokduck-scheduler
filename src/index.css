@@ -724,8 +724,10 @@ header {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;
   max-width: 480px;
   margin: 0 auto;
+  background: #f0f7f0;
 }
 
 .chat-header {

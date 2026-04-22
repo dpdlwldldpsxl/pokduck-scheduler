@@ -13,6 +13,17 @@ const TYPES = [
   { key: 'study', label: '학습 조언', icon: '📚' },
 ]
 
+function formatMessage(text) {
+  // **굵게** → <strong>
+  const parts = text.split(/(\*\*[^*]+\*\*)/g)
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={i}>{part.slice(2, -2)}</strong>
+    }
+    return part
+  })
+}
+
 export default function CoachingPage() {
   const { user } = useAuth()
   const { conversations, create, remove } = useConversations()
@@ -175,7 +186,7 @@ export default function CoachingPage() {
               <img src="/images/pokduck_default.png" alt="폭덕이" className="chat-avatar" />
             )}
             <div className={`chat-bubble-content ${msg.role}`}>
-              {msg.content}
+              {formatMessage(msg.content)}
             </div>
           </div>
         ))}
