@@ -19,7 +19,13 @@ export function SoundProvider({ children }) {
   useEffect(() => { localStorage.setItem('pokduck-sfx', sfxEnabled ? 'on' : 'off') }, [sfxEnabled])
 
   const playBgm = (type) => {
-    if (bgmTypeRef.current === type && bgmRef.current && !bgmRef.current.paused) return
+    // 같은 타입이면 재사용
+    if (bgmTypeRef.current === type && bgmRef.current) {
+      if (bgmRef.current.paused && bgmEnabled) {
+        bgmRef.current.play().catch(() => {})
+      }
+      return
+    }
 
     if (bgmRef.current) {
       bgmRef.current.pause()
@@ -62,12 +68,12 @@ export function SoundProvider({ children }) {
   const toggleBgm = () => {
     const next = !bgmEnabled
     setBgmEnabled(next)
-    if (bgmRef.current) {
-      if (next) {
-        bgmRef.current.play().catch(() => {})
-      } else {
-        bgmRef.current.pause()
-      }
+    if (!next && bgmRef.current) {
+      bgmRef.current.pause()
+    } else if (next && bgmRef.current) {
+      // 기존 오디오 객체 그대로 재생 (중복 방지)
+      bgmRef.current.currentTime = bgmRef.current.currentTime
+      bgmRef.current.play().catch(() => {})
     }
   }
 
