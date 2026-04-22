@@ -728,6 +728,12 @@ header {
   max-width: 480px;
   margin: 0 auto;
   background: #f0f7f0;
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  overflow: hidden;
 }
 
 .chat-header {
@@ -835,8 +841,10 @@ header {
   display: flex;
   gap: 8px;
   padding: 10px 16px;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
   background: white;
   border-top: 1px solid #e8e8e8;
+  flex-shrink: 0;
 }
 
 .chat-input {
