@@ -64,14 +64,16 @@ export default async function handler(req, res) {
     const geminiData = await geminiRes.json()
 
     if (!geminiRes.ok) {
-      console.error('Gemini error:', geminiData)
-      return res.status(500).json({ error: '학습 자료 생성 실패' })
+      console.error('Gemini error:', JSON.stringify(geminiData))
+      return res.status(500).json({ error: '학습 자료 생성 실패', detail: geminiData?.error?.message || 'unknown' })
     }
 
-    const content = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || ''
+    // thinking 모델은 parts가 여러 개일 수 있음
+    const parts = geminiData.candidates?.[0]?.content?.parts || []
+    const content = parts.filter((p) => p.text).map((p) => p.text).join('') || '...'
     return res.json({ content })
   } catch (error) {
     console.error('Study assist error:', error)
-    return res.status(500).json({ error: '학습 자료 생성 실패' })
+    return res.status(500).json({ error: '학습 자료 생성 실패', detail: error.message })
   }
 }

@@ -207,7 +207,8 @@ ${studyNotes?.length > 0
       return res.status(500).json({ error: '폭덕이가 잠시 쉬고 있어요...' })
     }
 
-    const assistantContent = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '...'
+    const parts = geminiData.candidates?.[0]?.content?.parts || []
+    const assistantContent = parts.filter((p) => p.text).map((p) => p.text).join('') || '...'
 
     // 어시스턴트 메시지 저장
     await supabase.from('coaching_messages').insert({
