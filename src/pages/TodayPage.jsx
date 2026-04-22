@@ -28,6 +28,30 @@ export default function TodayPage() {
   const [message, setMessage] = useState(dailyMsg.msg)
   const [mood, setMood] = useState(dailyMsg.mood)
   const [showCongrats, setShowCongrats] = useState(false)
+  const [suggestion, setSuggestion] = useState(null)
+
+  // 일정 기반 자동 제안
+  useEffect(() => {
+    if (scheduleLoading || todaySchedule.length === 0) return
+
+    const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }))
+    const currentHour = now.getHours()
+    const names = todaySchedule.map((s) => s.title).join(', ')
+
+    if (todaySchedule.length >= 3) {
+      setSuggestion(`오늘 일정이 ${todaySchedule.length}개나 있네! 빡센 하루인데, 중간중간 쉬어가면서 하자 🦆`)
+    } else if (currentHour < 12 && todaySchedule.some((s) => {
+      const h = parseInt(s.start_time)
+      return h >= 18
+    })) {
+      const evening = todaySchedule.find((s) => parseInt(s.start_time) >= 18)
+      setSuggestion(`저녁에 ${evening?.title}이 있으니까, 오전에 할 일 먼저 끝내두는 건 어때?`)
+    } else if (todaySchedule.length === 1) {
+      setSuggestion(`오늘은 ${todaySchedule[0].title}만 있으니까 여유롭네! 빈 시간에 복습이나 할까? 🦆`)
+    } else {
+      setSuggestion(`오늘 ${names} 있어! 화이팅!`)
+    }
+  }, [todaySchedule, scheduleLoading])
 
   useEffect(() => {
     loadProfile()
@@ -177,6 +201,15 @@ export default function TodayPage() {
           </div>
         )}
       </section>
+
+      {suggestion && (
+        <section className="card suggestion-card">
+          <div className="suggestion-row">
+            <img src="/images/pokduck_default.png" alt="폭덕이" className="suggestion-avatar" />
+            <p className="suggestion-text">{suggestion}</p>
+          </div>
+        </section>
+      )}
 
       <TaskList
         tasks={tasksForList}

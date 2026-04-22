@@ -4,9 +4,9 @@ import { useSound } from '../hooks/useSound'
 const TABS = [
   { path: '/today', label: '오늘', icon: '🏠' },
   { path: '/schedule', label: '일정', icon: '📅' },
-  { path: '/coaching', label: '코칭', icon: '🤖' },
-  { path: '/mood', label: '기분', icon: '😊' },
   { path: '/goals', label: '목표', icon: '🎯' },
+  { path: '/mood', label: '기분', icon: '😊' },
+  { path: '/coaching', label: '코칭', icon: '🤖' },
 ]
 
 export default function BottomNav() {
