@@ -46,10 +46,12 @@ export default function CoachingPage() {
     checkSurvey()
   }, [user])
   const messagesEndRef = useRef(null)
+  const inputRef = useRef(null)
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+    if (!sending) inputRef.current?.focus()
+  }, [messages, sending])
 
   const handleNewConversation = (type) => {
     playSfx('click')
@@ -230,6 +232,7 @@ export default function CoachingPage() {
 
       <div className="chat-input-bar">
         <input
+          ref={inputRef}
           type="text"
           className="chat-input"
           placeholder="폭덕이에게 말해봐..."
@@ -237,6 +240,7 @@ export default function CoachingPage() {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSend()}
           disabled={sending}
+          autoFocus
         />
         <button className="chat-send" onClick={handleSend} disabled={sending || !input.trim()}>
           {sending ? '...' : '↑'}
