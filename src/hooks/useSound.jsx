@@ -81,7 +81,7 @@ export function SoundProvider({ children }) {
     setSfxEnabled((prev) => !prev)
   }
 
-  const SFX_VOLUMES = { add: 0.4, cancel: 0.4 }
+  const SFX_VOLUMES = { add: 0.4, cancel: 0.3 }
 
   const playSfx = (name) => {
     if (!sfxEnabled) return
