@@ -51,10 +51,10 @@ export default function CoachingPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  const handleNewConversation = async (type) => {
+  const handleNewConversation = (type) => {
     playSfx('click')
-    const conv = await create(type)
-    if (conv) setActiveConv(conv)
+    // DB에 아직 안 만들고 임시로 세팅. 첫 메시지 보낼 때 생성
+    setActiveConv({ id: null, conversation_type: type, title: '새 대화' })
   }
 
   const handleSend = async () => {
@@ -68,6 +68,16 @@ export default function CoachingPage() {
     addLocal('assistant', '폭덕이가 생각하는 중... 🦆')
 
     try {
+      // 첫 메시지일 때 대화 생성
+      let convId = activeConv.id
+      if (!convId) {
+        const conv = await create(activeConv.conversation_type)
+        if (conv) {
+          convId = conv.id
+          setActiveConv(conv)
+        }
+      }
+
       const { data: { session } } = await supabase.auth.getSession()
       const res = await fetch('/api/coaching', {
         method: 'POST',
@@ -76,7 +86,7 @@ export default function CoachingPage() {
           'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
-          conversationId: activeConv.id,
+          conversationId: convId,
           message: text,
           conversationType: activeConv.conversation_type,
         }),
@@ -97,6 +107,24 @@ export default function CoachingPage() {
   const handleBack = () => {
     setActiveConv(null)
   }
+
+  // 기존 빈 대화 정리 (메시지 없는 대화 삭제)
+  useEffect(() => {
+    if (!activeConv) {
+      const cleanup = async () => {
+        for (const conv of conversations) {
+          const { count } = await supabase
+            .from('coaching_messages')
+            .select('id', { count: 'exact', head: true })
+            .eq('conversation_id', conv.id)
+          if (count === 0) {
+            remove(conv.id)
+          }
+        }
+      }
+      cleanup()
+    }
+  }, [activeConv])
 
   // 온보딩 설문
   if (hasSurvey === false) {
