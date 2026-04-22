@@ -75,10 +75,12 @@ export function SoundProvider({ children }) {
     setSfxEnabled((prev) => !prev)
   }
 
+  const SFX_VOLUMES = { add: 0.4 }
+
   const playSfx = (name) => {
     if (!sfxEnabled) return
     const audio = new Audio(`/sounds/${name}.wav`)
-    audio.volume = sfxVolume
+    audio.volume = SFX_VOLUMES[name] || sfxVolume
     audio.play().catch(() => {})
   }
 

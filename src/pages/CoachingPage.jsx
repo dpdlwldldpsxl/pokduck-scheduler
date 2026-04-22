@@ -111,6 +111,7 @@ export default function CoachingPage() {
   }
 
   const handleBack = () => {
+    playSfx('back')
     setActiveConv(null)
   }
 
