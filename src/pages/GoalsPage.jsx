@@ -20,6 +20,9 @@ export default function GoalsPage() {
   const [quickNote, setQuickNote] = useState('')
   const [studyAssist, setStudyAssist] = useState(null)
   const [assistLoading, setAssistLoading] = useState(false)
+  const [assistOpen, setAssistOpen] = useState(true)
+  const [noteFilter, setNoteFilter] = useState('all')
+  const [showAllNotes, setShowAllNotes] = useState(false)
 
   // 습관 입력
   const [showAddHabit, setShowAddHabit] = useState(false)
@@ -139,12 +142,22 @@ export default function GoalsPage() {
 
             {studyAssist && (
               <div className="study-assist-card">
-                <div className="study-assist-header">
+                <div className="study-assist-header" onClick={() => !assistLoading && setAssistOpen(!assistOpen)}>
                   <img src="/images/pokduck_default.png" alt="폭덕이" className="suggestion-avatar" />
                   <span className="study-assist-title">{assistLoading ? '분석 중...' : '폭덕이의 학습 연계'}</span>
-                  {!assistLoading && <button className="study-assist-close" onClick={() => setStudyAssist(null)}>×</button>}
+                  {!assistLoading && <span className="study-assist-toggle">{assistOpen ? '접기 ▲' : '펼치기 ▼'}</span>}
+                  {!assistLoading && <button className="study-assist-close" onClick={(e) => { e.stopPropagation(); setStudyAssist(null) }}>×</button>}
                 </div>
-                <div className="study-assist-content">{studyAssist}</div>
+                {assistOpen && <div className="study-assist-content">{studyAssist}</div>}
+              </div>
+            )}
+
+            {notes.length > 0 && (
+              <div className="note-filters">
+                <button className={`note-filter${noteFilter === 'all' ? ' active' : ''}`} onClick={() => setNoteFilter('all')}>전체</button>
+                {[...new Set(notes.map((n) => n.academies?.name).filter(Boolean))].map((name) => (
+                  <button key={name} className={`note-filter${noteFilter === name ? ' active' : ''}`} onClick={() => setNoteFilter(name)}>{name}</button>
+                ))}
               </div>
             )}
 
@@ -154,7 +167,11 @@ export default function GoalsPage() {
               </p>
             )}
 
-            {notes.map((note) => (
+            {(() => {
+              const filtered = noteFilter === 'all' ? notes : notes.filter((n) => n.academies?.name === noteFilter)
+              const visible = showAllNotes ? filtered : filtered.slice(0, 5)
+              return (<>
+                {visible.map((note) => (
               <div key={note.id} className="note-item" style={{ borderLeftColor: note.academies?.color || '#7cc47c' }}>
                 <div className="note-header">
                   <span className="note-academy-badge">{note.academies?.icon} {note.academies?.name || '기타'}</span>
@@ -168,6 +185,13 @@ export default function GoalsPage() {
                 </p>
               </div>
             ))}
+                {filtered.length > 5 && (
+                  <button className="show-more-btn" onClick={() => setShowAllNotes(!showAllNotes)}>
+                    {showAllNotes ? '접기 ▲' : `더보기 (${filtered.length - 5}개) ▼`}
+                  </button>
+                )}
+              </>)
+            })()}
           </section>
         </>
       )}

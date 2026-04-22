@@ -735,11 +735,21 @@ header {
   flex: 1;
 }
 
+.study-assist-toggle {
+  font-size: 11px;
+  color: #7cc47c;
+  cursor: pointer;
+}
+
 .study-assist-close {
   background: none;
   border: none;
   font-size: 18px;
   color: #ccc;
+  cursor: pointer;
+}
+
+.study-assist-header {
   cursor: pointer;
 }
 
@@ -810,6 +820,45 @@ header {
 .note-review-info {
   font-size: 11px;
   color: #aaa;
+}
+
+/* 메모 필터 */
+.note-filters {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.note-filter {
+  padding: 5px 12px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 20px;
+  background: white;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  color: #888;
+}
+
+.note-filter.active {
+  background: #7cc47c;
+  border-color: #7cc47c;
+  color: white;
+}
+
+.show-more-btn {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  background: none;
+  color: #7cc47c;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  margin-top: 8px;
 }
 
 /* 습관 */
