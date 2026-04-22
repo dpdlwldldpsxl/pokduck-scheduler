@@ -30,7 +30,7 @@ export default function Header({ mood, dateStr }) {
           id="pokduck-img"
         />
         <div className="header-text">
-          <h1>폭덕이의 스케줄러</h1>
+          <h1>폭덕이의 AI 코치</h1>
           <p>{dateStr}</p>
         </div>
       </div>

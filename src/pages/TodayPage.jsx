@@ -1,31 +1,43 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-import IntroOverlay from '../components/IntroOverlay'
-import CelebrationOverlay from '../components/CelebrationOverlay'
 import Header from '../components/Header'
 import SpeechBubble from '../components/SpeechBubble'
-import TodaySchedule from '../components/TodaySchedule'
 import TaskList from '../components/TaskList'
-import WeekGrid from '../components/WeekGrid'
-import AIScheduler from '../components/AIScheduler'
 import BottomNav from '../components/BottomNav'
 import { getTodayInfo, POKDUCK_DAY_CONFIG, CHEERS } from '../data/scheduleData'
 
 export default function TodayPage() {
-  const { user } = useAuth()
+  const { user, signOut } = useAuth()
+  const navigate = useNavigate()
   const todayInfo = getTodayInfo()
   const todayConfig = POKDUCK_DAY_CONFIG[todayInfo.dayName]
 
-  const [showIntro, setShowIntro] = useState(true)
-  const [showCelebrate, setShowCelebrate] = useState(false)
+  const [profile, setProfile] = useState(null)
   const [tasks, setTasks] = useState([])
   const [message, setMessage] = useState(todayConfig.msg)
   const [mood, setMood] = useState(todayConfig.mood)
 
   useEffect(() => {
+    loadProfile()
     loadTasks()
   }, [user])
+
+  const loadProfile = async () => {
+    const { data } = await supabase
+      .from('profiles')
+      .select('display_name')
+      .eq('id', user.id)
+      .single()
+    if (data) {
+      if (!data.display_name) {
+        navigate('/nickname', { replace: true })
+        return
+      }
+      setProfile(data)
+    }
+  }
 
   const loadTasks = async () => {
     const { data } = await supabase
@@ -62,7 +74,6 @@ export default function TodayPage() {
       if (allDone && newTasks.length > 0) {
         setMessage('오늘 할 일 다 했어?! 최고야!!! 폭덕이가 너무 자랑스러워!! 🎉')
         setMood('celebrate')
-        setShowCelebrate(true)
       } else {
         setMessage(CHEERS[Math.floor(Math.random() * CHEERS.length)])
         setMood('happy')
@@ -79,24 +90,30 @@ export default function TodayPage() {
     setTasks(tasks.filter((_, i) => i !== index))
   }
 
-  // TaskList expects { text, category, done } but DB has { text, category, is_done }
+  const displayName = profile?.display_name || '사용자'
   const tasksForList = tasks.map((t) => ({ ...t, done: t.is_done }))
 
   return (
     <>
-      {showIntro && <IntroOverlay onClose={() => setShowIntro(false)} />}
-      {showCelebrate && <CelebrationOverlay onClose={() => setShowCelebrate(false)} />}
       <Header mood={mood} dateStr={todayInfo.dateStr} />
-      <SpeechBubble message={message} />
-      <TodaySchedule dayName={todayInfo.dayName} />
+      <SpeechBubble message={`${displayName}님, ${message}`} />
+
+      <section className="card">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <p style={{ fontSize: '13px', color: '#888' }}>
+            {displayName}님 환영해요!
+          </p>
+          <button onClick={signOut} className="logout-btn">로그아웃</button>
+        </div>
+      </section>
+
       <TaskList
         tasks={tasksForList}
         onAdd={handleAdd}
         onToggle={handleToggle}
         onDelete={handleDelete}
       />
-      <AIScheduler existingTasks={tasksForList} onAddTask={handleAdd} />
-      <WeekGrid todayName={todayInfo.dayName} />
+
       <BottomNav />
     </>
   )

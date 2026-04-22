@@ -580,3 +580,87 @@ header {
   font-size: 10px;
   font-weight: 600;
 }
+
+/* 플레이스홀더 페이지 */
+.page-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.page-placeholder-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.page-placeholder h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.page-placeholder p {
+  font-size: 14px;
+  color: #999;
+}
+
+/* 로그아웃 버튼 */
+.logout-btn {
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 5px 12px;
+  font-size: 12px;
+  color: #999;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.logout-btn:hover {
+  border-color: #ff6b6b;
+  color: #ff6b6b;
+}
+
+/* 닉네임 입력 */
+.nickname-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 16px;
+  outline: none;
+  font-family: inherit;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.nickname-input:focus {
+  border-color: #7cc47c;
+}
+
+.nickname-btn {
+  width: 100%;
+  padding: 14px;
+  background: #7cc47c;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s;
+}
+
+.nickname-btn:hover {
+  background: #5aab5a;
+}
+
+.nickname-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
