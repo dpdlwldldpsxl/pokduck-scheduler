@@ -50,14 +50,47 @@ export const FIXED_SCHEDULE = {
   ],
 }
 
+const DAILY_CHEERS_POOL = [
+  '오늘도 멋진 하루가 될 거야! 폭덕이가 응원해!',
+  '어제보다 오늘이 더 나은 하루가 될 거야!',
+  '작은 것부터 하나씩! 그게 제일 잘하는 거야.',
+  '피곤해도 괜찮아. 시작만 하면 돼!',
+  '오늘 할 일 다 못해도 괜찮아. 한 개만 해도 대단한 거야!',
+  '폭덕이가 옆에서 지켜보고 있을게. 화이팅!',
+  '잘하고 있어! 스스로한테 칭찬 한 번 해줘.',
+  '오늘 하루도 넌 충분히 잘하고 있어!',
+  '쉬엄쉬엄 해도 돼. 중요한 건 포기 안 하는 거야.',
+  '넌 생각보다 훨씬 대단한 사람이야. 폭덕이 말 믿어!',
+  '오늘 기분이 별로여도 괜찮아. 내일은 더 나을 거야.',
+  '한 걸음씩! 거북이도 결국 도착하잖아 🐢',
+]
+
+const WEEKEND_CHEERS = [
+  '주말이다! 푹 쉬면서 충전하자.',
+  '오늘은 하고 싶은 것만 하는 날!',
+  '가끔은 아무것도 안 하는 게 최고야.',
+  '주말은 폭덕이도 쉬는 날... 이라고 할 뻔!',
+]
+
+export function getDailyMessage() {
+  const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }))
+  const day = now.getDay()
+  const seed = now.getFullYear() * 1000 + now.getMonth() * 32 + now.getDate()
+  if (day === 0 || day === 6) {
+    return { msg: WEEKEND_CHEERS[seed % WEEKEND_CHEERS.length], mood: day === 0 ? 'rest' : 'happy' }
+  }
+  return { msg: DAILY_CHEERS_POOL[seed % DAILY_CHEERS_POOL.length], mood: 'cheer' }
+}
+
+// 레거시 호환용 (제거 예정)
 export const POKDUCK_DAY_CONFIG = {
-  '월': { msg: '월요일이다! 영어 수업 준비됐어? 오늘 필라테스도 있어. 화이팅!', mood: 'cheer' },
-  '화': { msg: '아침 황금 1.5시간! 오늘 공부하기 제일 좋은 날이야.', mood: 'cheer' },
-  '수': { msg: '수요일! 영어 수업 + 필라테스. 사이에 잠깐 쉬어도 돼.', mood: 'default' },
-  '목': { msg: '오늘 저녁엔 사운드 디자인 레슨! 아침 시간 활용해봐.', mood: 'cheer' },
-  '금': { msg: '금요일이다! 아침에 이번 주 마무리하고, 저녁은 진짜 쉬어~', mood: 'happy' },
-  '토': { msg: '토요일! 필라테스 11시, 드럼 3시. 오늘도 잘 할 수 있어! 🥁', mood: 'cheer' },
-  '일': { msg: '오늘은 쉬는 날이야. 아무것도 안 해도 돼. 폭덕이 명령이야!', mood: 'rest' },
+  '월': { msg: '', mood: 'cheer' },
+  '화': { msg: '', mood: 'cheer' },
+  '수': { msg: '', mood: 'default' },
+  '목': { msg: '', mood: 'cheer' },
+  '금': { msg: '', mood: 'happy' },
+  '토': { msg: '', mood: 'cheer' },
+  '일': { msg: '', mood: 'rest' },
 }
 
 export const WEEK_TAGS = {

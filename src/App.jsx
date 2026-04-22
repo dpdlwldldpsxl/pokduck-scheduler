@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
+import { SoundProvider } from './hooks/useSound'
 import ProtectedRoute from './components/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
 import TodayPage from './pages/TodayPage'
@@ -12,6 +13,7 @@ import NicknamePage from './pages/NicknamePage'
 export default function App() {
   return (
     <BrowserRouter>
+      <SoundProvider>
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
@@ -24,6 +26,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/today" replace />} />
         </Routes>
       </AuthProvider>
+      </SoundProvider>
     </BrowserRouter>
   )
 }

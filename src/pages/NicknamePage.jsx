@@ -2,16 +2,19 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { useSound } from '../hooks/useSound'
 
 export default function NicknamePage() {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const { playSfx } = useSound()
   const [nickname, setNickname] = useState('')
   const [saving, setSaving] = useState(false)
 
   const handleSubmit = async () => {
     if (!nickname.trim() || saving) return
     setSaving(true)
+    playSfx('confirm')
     await supabase
       .from('profiles')
       .update({ display_name: nickname.trim() })

@@ -4,10 +4,16 @@ import { Auth } from '@supabase/auth-ui-react'
 import { ThemeSupa } from '@supabase/auth-ui-shared'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { useSound } from '../hooks/useSound'
 
 export default function LoginPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const { playBgm } = useSound()
+
+  useEffect(() => {
+    playBgm('intro')
+  }, [])
 
   useEffect(() => {
     if (user) navigate('/today', { replace: true })

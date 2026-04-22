@@ -2,22 +2,30 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { useTodaySchedule } from '../hooks/useSchedule'
 import Header from '../components/Header'
 import SpeechBubble from '../components/SpeechBubble'
 import TaskList from '../components/TaskList'
 import BottomNav from '../components/BottomNav'
-import { getTodayInfo, POKDUCK_DAY_CONFIG, CHEERS } from '../data/scheduleData'
+import { getTodayInfo, getDailyMessage, CHEERS } from '../data/scheduleData'
+import { useSound } from '../hooks/useSound'
 
 export default function TodayPage() {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
   const todayInfo = getTodayInfo()
-  const todayConfig = POKDUCK_DAY_CONFIG[todayInfo.dayName]
+  const dailyMsg = getDailyMessage()
+  const { items: todaySchedule, loading: scheduleLoading, reload: reloadSchedule } = useTodaySchedule()
+  const { playBgm, playSfx } = useSound()
+
+  useEffect(() => {
+    playBgm('main')
+  }, [])
 
   const [profile, setProfile] = useState(null)
   const [tasks, setTasks] = useState([])
-  const [message, setMessage] = useState(todayConfig.msg)
-  const [mood, setMood] = useState(todayConfig.mood)
+  const [message, setMessage] = useState(dailyMsg.msg)
+  const [mood, setMood] = useState(dailyMsg.mood)
 
   useEffect(() => {
     loadProfile()
@@ -49,6 +57,7 @@ export default function TodayPage() {
   }
 
   const handleAdd = async (text, category) => {
+    playSfx('add')
     const { data } = await supabase
       .from('tasks')
       .insert({ user_id: user.id, text, category, is_done: false })
@@ -72,15 +81,17 @@ export default function TodayPage() {
     if (newDone) {
       const allDone = newTasks.every((t) => t.is_done)
       if (allDone && newTasks.length > 0) {
+        playSfx('celebrate')
         setMessage('오늘 할 일 다 했어?! 최고야!!! 폭덕이가 너무 자랑스러워!! 🎉')
         setMood('celebrate')
       } else {
+        playSfx('confirm')
         setMessage(CHEERS[Math.floor(Math.random() * CHEERS.length)])
         setMood('happy')
       }
     } else {
-      setMessage(todayConfig.msg)
-      setMood(todayConfig.mood)
+      setMessage(dailyMsg.msg)
+      setMood(dailyMsg.mood)
     }
   }
 
@@ -105,6 +116,35 @@ export default function TodayPage() {
           </p>
           <button onClick={signOut} className="logout-btn">로그아웃</button>
         </div>
+      </section>
+
+      {/* 오늘 일정 타임라인 */}
+      <section className="card">
+        <h2>📋 오늘 일정</h2>
+        {scheduleLoading ? (
+          <p style={{ color: '#aaa', fontSize: '14px', padding: '8px 0' }}>불러오는 중...</p>
+        ) : todaySchedule.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '16px 0' }}>
+            <p style={{ color: '#aaa', fontSize: '14px' }}>오늘은 등록된 일정이 없어요</p>
+            <button
+              className="add-btn"
+              style={{ marginTop: '8px' }}
+              onClick={() => navigate('/schedule')}
+            >일정 추가하러 가기</button>
+          </div>
+        ) : (
+          <div className="timeline">
+            {todaySchedule.map((item) => (
+              <div key={item.id} className="timeline-item" style={{ '--accent': item.academies?.color || '#7cc47c' }}>
+                <div className="timeline-dot" />
+                <div className="timeline-content">
+                  <span className="timeline-time">{item.start_time?.slice(0, 5)}</span>
+                  <span className="timeline-title">{item.academies?.icon} {item.title}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       <TaskList
