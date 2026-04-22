@@ -64,7 +64,7 @@ export default function CoachingPage() {
     const text = input.trim()
     setInput('')
     setSending(true)
-    playSfx('click')
+    playSfx('send')
 
     // UI 먼저 즉시 반영
     addLocal('user', text)
