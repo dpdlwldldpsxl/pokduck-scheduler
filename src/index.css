@@ -1283,87 +1283,79 @@ header {
   color: #888;
 }
 
-/* 시간 선택기 */
-.time-picker {
-  background: #f8f8f8;
-  border-radius: 12px;
-  padding: 10px;
+/* 시간 선택기 (구글 캘린더 스타일) */
+.tp-container {
+  position: relative;
 }
 
-.time-picker-label {
+.tp-label {
   font-size: 12px;
   color: #888;
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
-.time-picker-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-}
-
-.time-picker-col {
-  flex: 1;
-}
-
-.time-picker-grid {
-  display: grid;
-  gap: 3px;
-}
-
-.time-picker-grid.hours {
-  grid-template-columns: repeat(6, 1fr);
-}
-
-.time-picker-grid.minutes {
-  grid-template-columns: repeat(4, 1fr);
-}
-
-.time-picker-btn {
-  padding: 6px 0;
-  border: 1px solid #e8e8e8;
-  border-radius: 6px;
+.tp-button {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 10px;
   background: white;
-  font-size: 13px;
-  cursor: pointer;
+  font-size: 15px;
   font-family: inherit;
-  color: #555;
-  transition: all 0.15s;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #333;
 }
 
-.time-picker-btn:hover {
+.tp-button:hover {
   border-color: #7cc47c;
 }
 
-.time-picker-btn.selected {
-  background: #7cc47c;
-  border-color: #7cc47c;
-  color: white;
-  font-weight: 700;
+.tp-arrow {
+  font-size: 10px;
+  color: #999;
 }
 
-.time-picker-unit {
-  font-size: 11px;
-  color: #aaa;
-  text-align: center;
-  display: block;
+.tp-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  background: white;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  z-index: 20;
   margin-top: 4px;
 }
 
-.time-picker-colon {
-  font-size: 20px;
-  font-weight: 700;
-  color: #999;
-  padding-top: 20px;
+.tp-option {
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  background: white;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  color: #333;
+  transition: background 0.1s;
 }
 
-.time-picker-display {
-  text-align: center;
-  font-size: 18px;
-  font-weight: 700;
-  color: #7cc47c;
-  margin-top: 8px;
+.tp-option:hover {
+  background: #f0f7f0;
+}
+
+.tp-option.tp-selected {
+  background: #e8f5e8;
+  color: #5aab5a;
+  font-weight: 600;
 }
 
 /* 요일별 일정 목록 */

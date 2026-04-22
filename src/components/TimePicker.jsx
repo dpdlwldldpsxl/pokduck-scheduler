@@ -1,54 +1,63 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
-const HOURS = Array.from({ length: 18 }, (_, i) => i + 6) // 6~23
-const MINUTES = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
+const OPTIONS = []
+for (let h = 6; h <= 23; h++) {
+  for (const m of [0, 15, 30, 45]) {
+    const time = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+    const period = h < 12 ? '오전' : '오후'
+    const displayH = h > 12 ? h - 12 : h === 0 ? 12 : h
+    const label = `${period} ${displayH}:${String(m).padStart(2, '0')}`
+    OPTIONS.push({ value: time, label })
+  }
+}
 
 export default function TimePicker({ value, onChange, label }) {
-  const [h, m] = (value || '09:00').split(':').map(Number)
+  const [open, setOpen] = useState(false)
+  const ref = useRef()
+  const listRef = useRef()
 
-  const setHour = (newH) => {
-    onChange(`${String(newH).padStart(2, '0')}:${String(m).padStart(2, '0')}`)
-  }
+  const current = OPTIONS.find((o) => o.value === value) || OPTIONS[0]
 
-  const setMinute = (newM) => {
-    onChange(`${String(h).padStart(2, '0')}:${String(newM).padStart(2, '0')}`)
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  useEffect(() => {
+    if (open && listRef.current) {
+      const selected = listRef.current.querySelector('.tp-selected')
+      if (selected) selected.scrollIntoView({ block: 'center' })
+    }
+  }, [open])
+
+  const handleSelect = (val) => {
+    onChange(val)
+    setOpen(false)
   }
 
   return (
-    <div className="time-picker">
-      {label && <span className="time-picker-label">{label}</span>}
-      <div className="time-picker-row">
-        <div className="time-picker-col">
-          <div className="time-picker-grid hours">
-            {HOURS.map((hr) => (
-              <button
-                key={hr}
-                className={`time-picker-btn${h === hr ? ' selected' : ''}`}
-                onClick={() => setHour(hr)}
-              >
-                {hr}
-              </button>
-            ))}
-          </div>
-          <span className="time-picker-unit">시</span>
+    <div className="tp-container" ref={ref}>
+      {label && <span className="tp-label">{label}</span>}
+      <button className="tp-button" onClick={() => setOpen(!open)}>
+        {current.label}
+        <span className="tp-arrow">{open ? '▲' : '▼'}</span>
+      </button>
+      {open && (
+        <div className="tp-dropdown" ref={listRef}>
+          {OPTIONS.map((o) => (
+            <button
+              key={o.value}
+              className={`tp-option${o.value === value ? ' tp-selected' : ''}`}
+              onClick={() => handleSelect(o.value)}
+            >
+              {o.label}
+            </button>
+          ))}
         </div>
-        <span className="time-picker-colon">:</span>
-        <div className="time-picker-col">
-          <div className="time-picker-grid minutes">
-            {MINUTES.map((min) => (
-              <button
-                key={min}
-                className={`time-picker-btn${m === min ? ' selected' : ''}`}
-                onClick={() => setMinute(min)}
-              >
-                {String(min).padStart(2, '0')}
-              </button>
-            ))}
-          </div>
-          <span className="time-picker-unit">분</span>
-        </div>
-      </div>
-      <div className="time-picker-display">{String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}</div>
+      )}
     </div>
   )
 }
