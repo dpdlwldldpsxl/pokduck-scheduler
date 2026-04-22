@@ -832,6 +832,29 @@ header {
   box-shadow: 0 2px 12px rgba(0,0,0,0.08);
 }
 
+.google-login-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 12px;
+  background: white;
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.google-login-btn:hover {
+  border-color: #7cc47c;
+  background: #f6fef6;
+}
+
 /* 하단 네비게이션 */
 .bottom-nav {
   position: fixed;
