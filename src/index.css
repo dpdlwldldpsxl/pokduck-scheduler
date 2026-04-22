@@ -712,6 +712,44 @@ header {
   cursor: not-allowed;
 }
 
+/* 학습 연계 자료 */
+.study-assist-card {
+  margin-top: 12px;
+  background: #f6fef6;
+  border: 1.5px solid #7cc47c;
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.study-assist-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.study-assist-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #5aab5a;
+  flex: 1;
+}
+
+.study-assist-close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #ccc;
+  cursor: pointer;
+}
+
+.study-assist-content {
+  font-size: 13px;
+  color: #444;
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+
 /* 학습 메모 */
 .note-textarea {
   width: 100%;

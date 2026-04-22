@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { supabase } from '../lib/supabase'
 import { useStudyNotes, useHabits, useGoals } from '../hooks/useGoals'
 import { useAcademies } from '../hooks/useSchedule'
 import { useSound } from '../hooks/useSound'
@@ -17,6 +18,8 @@ export default function GoalsPage() {
 
   // 학습 메모 입력 (한 줄)
   const [quickNote, setQuickNote] = useState('')
+  const [studyAssist, setStudyAssist] = useState(null)
+  const [assistLoading, setAssistLoading] = useState(false)
 
   // 습관 입력
   const [showAddHabit, setShowAddHabit] = useState(false)
@@ -29,10 +32,11 @@ export default function GoalsPage() {
   const [goalDate, setGoalDate] = useState('')
 
   const handleQuickNote = async () => {
-    if (!quickNote.trim()) return
+    if (!quickNote.trim() || assistLoading) return
     playSfx('add')
-    // 학원 자동 감지
     const text = quickNote.trim()
+
+    // 학원 자동 감지
     let matchedAcademy = null
     for (const a of academies) {
       if (text.includes(a.name)) {
@@ -42,6 +46,32 @@ export default function GoalsPage() {
     }
     await addNote(text, '', matchedAcademy)
     setQuickNote('')
+
+    // AI 학습 연계 자료 생성
+    setAssistLoading(true)
+    setStudyAssist('폭덕이가 학습 자료 만드는 중... 🦆')
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/study-assist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ noteText: text }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        playSfx('receive')
+        setStudyAssist(data.content)
+      } else {
+        setStudyAssist(null)
+      }
+    } catch {
+      setStudyAssist(null)
+    } finally {
+      setAssistLoading(false)
+    }
   }
 
   const handleAddHabit = async () => {
@@ -107,7 +137,18 @@ export default function GoalsPage() {
             </div>
             <p style={{ fontSize: '11px', color: '#bbb', marginTop: '4px' }}>학원 이름 포함하면 자동 분류! (예: "영어에서 ~~")</p>
 
-            {notes.length === 0 && (
+            {studyAssist && (
+              <div className="study-assist-card">
+                <div className="study-assist-header">
+                  <img src="/images/pokduck_default.png" alt="폭덕이" className="suggestion-avatar" />
+                  <span className="study-assist-title">{assistLoading ? '분석 중...' : '폭덕이의 학습 연계'}</span>
+                  {!assistLoading && <button className="study-assist-close" onClick={() => setStudyAssist(null)}>×</button>}
+                </div>
+                <div className="study-assist-content">{studyAssist}</div>
+              </div>
+            )}
+
+            {notes.length === 0 && !studyAssist && (
               <p style={{ color: '#aaa', fontSize: '14px', textAlign: 'center', padding: '20px 0' }}>
                 아직 메모가 없어요. 한 줄이라도 적어보세요!
               </p>
