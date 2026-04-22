@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAcademies, useScheduleItems } from '../hooks/useSchedule'
 import { useSound } from '../hooks/useSound'
+import TimePicker from '../components/TimePicker'
 import BottomNav from '../components/BottomNav'
 
 const PRESET_ACADEMIES = [
@@ -239,23 +240,9 @@ export default function SchedulePage() {
               ))}
             </div>
 
-            <div className="time-row">
-              <label>
-                <span>시작</span>
-                <select className="time-select" value={itemStart} onChange={(e) => handleStartChange(e.target.value)}>
-                  {HALF_HOURS.map((t) => (
-                    <option key={t} value={t}>{t}</option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                <span>종료</span>
-                <select className="time-select" value={itemEnd} onChange={(e) => setItemEnd(e.target.value)}>
-                  {HALF_HOURS.map((t) => (
-                    <option key={t} value={t}>{t}</option>
-                  ))}
-                </select>
-              </label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <TimePicker label="시작" value={itemStart} onChange={handleStartChange} />
+              <TimePicker label="종료" value={itemEnd} onChange={setItemEnd} />
             </div>
 
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -278,20 +265,8 @@ export default function SchedulePage() {
                 editingId === item.id ? (
                   <div key={item.id} className="schedule-edit-form">
                     <input type="text" className="schedule-input" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
-                    <div className="time-row">
-                      <label>
-                        <span>시작</span>
-                        <select className="time-select" value={editStart} onChange={(e) => { setEditStart(e.target.value); setEditEnd(addHour(e.target.value)) }}>
-                          {HALF_HOURS.map((t) => <option key={t} value={t}>{t}</option>)}
-                        </select>
-                      </label>
-                      <label>
-                        <span>종료</span>
-                        <select className="time-select" value={editEnd} onChange={(e) => setEditEnd(e.target.value)}>
-                          {HALF_HOURS.map((t) => <option key={t} value={t}>{t}</option>)}
-                        </select>
-                      </label>
-                    </div>
+                    <TimePicker label="시작" value={editStart} onChange={(v) => { setEditStart(v); setEditEnd(addHour(v)) }} />
+                    <TimePicker label="종료" value={editEnd} onChange={setEditEnd} />
                     <div style={{ display: 'flex', gap: '6px' }}>
                       <button className="edit-save-btn" onClick={saveEdit}>저장</button>
                       <button className="edit-cancel-btn" onClick={() => setEditingId(null)}>취소</button>

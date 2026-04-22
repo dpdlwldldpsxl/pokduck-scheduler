@@ -192,12 +192,15 @@ export default function CoachingPage() {
     <div className="chat-container">
       <div className="chat-header">
         <button className="chat-back" onClick={handleBack}>←</button>
-        <div>
+        <div style={{ flex: 1 }}>
           <p className="chat-header-title">
             {TYPES.find((t) => t.key === activeConv.conversation_type)?.icon} {activeConv.title}
           </p>
           <p className="chat-header-sub">폭덕이 AI 코치</p>
         </div>
+        <span className="chat-category-badge">
+          {TYPES.find((t) => t.key === activeConv.conversation_type)?.label || '자유 대화'}
+        </span>
       </div>
 
       <div className="chat-messages">

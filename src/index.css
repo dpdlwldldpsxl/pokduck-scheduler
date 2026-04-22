@@ -764,6 +764,16 @@ header {
   opacity: 0.8;
 }
 
+.chat-category-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.25);
+  color: white;
+  white-space: nowrap;
+}
+
 .chat-messages {
   flex: 1;
   overflow-y: auto;
@@ -1273,20 +1283,87 @@ header {
   color: #888;
 }
 
-.time-select {
-  width: 100%;
+/* 시간 선택기 */
+.time-picker {
+  background: #f8f8f8;
+  border-radius: 12px;
   padding: 10px;
-  border: 1.5px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 15px;
-  font-family: inherit;
-  outline: none;
-  background: white;
-  cursor: pointer;
 }
 
-.time-select:focus {
+.time-picker-label {
+  font-size: 12px;
+  color: #888;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.time-picker-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.time-picker-col {
+  flex: 1;
+}
+
+.time-picker-grid {
+  display: grid;
+  gap: 3px;
+}
+
+.time-picker-grid.hours {
+  grid-template-columns: repeat(6, 1fr);
+}
+
+.time-picker-grid.minutes {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.time-picker-btn {
+  padding: 6px 0;
+  border: 1px solid #e8e8e8;
+  border-radius: 6px;
+  background: white;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+  color: #555;
+  transition: all 0.15s;
+}
+
+.time-picker-btn:hover {
   border-color: #7cc47c;
+}
+
+.time-picker-btn.selected {
+  background: #7cc47c;
+  border-color: #7cc47c;
+  color: white;
+  font-weight: 700;
+}
+
+.time-picker-unit {
+  font-size: 11px;
+  color: #aaa;
+  text-align: center;
+  display: block;
+  margin-top: 4px;
+}
+
+.time-picker-colon {
+  font-size: 20px;
+  font-weight: 700;
+  color: #999;
+  padding-top: 20px;
+}
+
+.time-picker-display {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: #7cc47c;
+  margin-top: 8px;
 }
 
 /* 요일별 일정 목록 */
