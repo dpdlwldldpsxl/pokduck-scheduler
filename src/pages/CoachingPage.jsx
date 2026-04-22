@@ -102,8 +102,9 @@ export default function CoachingPage() {
       if (!res.ok) throw new Error(data.error)
 
       replaceLastAssistant(data.content)
-      playSfx('confirm')
+      playSfx('receive')
     } catch (err) {
+      playSfx('error')
       replaceLastAssistant('미안, 지금 잠시 문제가 있어... 다시 시도해줘! 🦆')
     } finally {
       setSending(false)

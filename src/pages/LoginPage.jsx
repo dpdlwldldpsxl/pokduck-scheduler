@@ -7,7 +7,7 @@ import { useSound } from '../hooks/useSound'
 export default function LoginPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const { playBgm } = useSound()
+  const { playBgm, playSfx } = useSound()
 
   useEffect(() => {
     playBgm('intro')
@@ -15,6 +15,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (user) {
+      playSfx('login')
       playBgm('main')
       navigate('/today', { replace: true })
     }
