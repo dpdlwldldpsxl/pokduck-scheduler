@@ -16,7 +16,10 @@ export default function LoginPage() {
   }, [])
 
   useEffect(() => {
-    if (user) navigate('/today', { replace: true })
+    if (user) {
+      playBgm('main')
+      navigate('/today', { replace: true })
+    }
   }, [user, navigate])
 
   return (

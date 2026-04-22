@@ -9,6 +9,7 @@ import TaskList from '../components/TaskList'
 import BottomNav from '../components/BottomNav'
 import { getTodayInfo, getDailyMessage, CHEERS } from '../data/scheduleData'
 import { useSound } from '../hooks/useSound'
+import SoundToggle from '../components/SoundToggle'
 
 export default function TodayPage() {
   const { user, signOut } = useAuth()
@@ -26,6 +27,7 @@ export default function TodayPage() {
   const [tasks, setTasks] = useState([])
   const [message, setMessage] = useState(dailyMsg.msg)
   const [mood, setMood] = useState(dailyMsg.mood)
+  const [showCongrats, setShowCongrats] = useState(false)
 
   useEffect(() => {
     loadProfile()
@@ -84,6 +86,7 @@ export default function TodayPage() {
         playSfx('celebrate')
         setMessage('오늘 할 일 다 했어?! 최고야!!! 폭덕이가 너무 자랑스러워!! 🎉')
         setMood('celebrate')
+        setShowCongrats(true)
       } else {
         playSfx('confirm')
         setMessage(CHEERS[Math.floor(Math.random() * CHEERS.length)])
@@ -96,6 +99,7 @@ export default function TodayPage() {
   }
 
   const handleDelete = async (index) => {
+    playSfx('cancel')
     const task = tasks[index]
     await supabase.from('tasks').delete().eq('id', task.id)
     setTasks(tasks.filter((_, i) => i !== index))
@@ -106,6 +110,30 @@ export default function TodayPage() {
 
   return (
     <>
+      {showCongrats && (
+        <div className="congrats-overlay" onClick={() => setShowCongrats(false)}>
+          <div className="congrats-card" onClick={(e) => e.stopPropagation()}>
+            <video
+              className="congrats-video"
+              src="/images/pokduck_congrats.mp4"
+              autoPlay
+              muted
+              loop
+              playsInline
+              onError={(e) => { e.target.style.display = 'none' }}
+            />
+            <h2 className="congrats-title">오늘도 고생했어요!</h2>
+            <p className="congrats-msg">
+              {displayName}님, 할 일을 전부 완료했어요!<br/>
+              폭덕이가 정말 자랑스러워! 🎉🦆
+            </p>
+            <button className="congrats-btn" onClick={() => { playSfx('confirm'); setShowCongrats(false) }}>
+              폭덕이 고마워!
+            </button>
+          </div>
+        </div>
+      )}
+
       <Header mood={mood} dateStr={todayInfo.dateStr} />
       <SpeechBubble message={`${displayName}님, ${message}`} />
 
@@ -114,7 +142,10 @@ export default function TodayPage() {
           <p style={{ fontSize: '13px', color: '#888' }}>
             {displayName}님 환영해요!
           </p>
-          <button onClick={signOut} className="logout-btn">로그아웃</button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <SoundToggle />
+            <button onClick={signOut} className="logout-btn">로그아웃</button>
+          </div>
         </div>
       </section>
 

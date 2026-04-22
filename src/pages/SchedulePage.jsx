@@ -159,7 +159,7 @@ export default function SchedulePage() {
           {academies.map((a) => (
             <div key={a.id} className="academy-chip" style={{ borderColor: a.color }}>
               <span>{a.icon} {a.name}</span>
-              <span className="academy-delete" onClick={() => removeAcademy(a.id)}>×</span>
+              <span className="academy-delete" onClick={() => { playSfx('cancel'); removeAcademy(a.id) }}>×</span>
             </div>
           ))}
         </div>
@@ -306,7 +306,7 @@ export default function SchedulePage() {
                     <div className="schedule-item-title">
                       {item.academies?.icon} {item.title}
                     </div>
-                    <span className="task-delete" onClick={(e) => { e.stopPropagation(); removeItem(item.id) }}>×</span>
+                    <span className="task-delete" onClick={(e) => { e.stopPropagation(); playSfx('cancel'); removeItem(item.id) }}>×</span>
                   </div>
                 )
               ))}

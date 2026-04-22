@@ -2,33 +2,25 @@ import { useRef, useEffect, useState, createContext, useContext } from 'react'
 
 const SoundContext = createContext(null)
 
-// BGM별 볼륨 배수 (여기서 조절)
 const BGM_VOLUMES = {
-  intro: 0.15,  // 인트로: 작게
-  main: 0.45,   // 메인: 크게
+  intro: 0.15,
+  main: 0.55,
 }
 
 export function SoundProvider({ children }) {
   const bgmRef = useRef(null)
-  const pendingBgmRef = useRef(null)
-  const [bgmType, setBgmType] = useState(null)
-  const [bgmEnabled, setBgmEnabled] = useState(true)
-  const [sfxEnabled, setSfxEnabled] = useState(true)
-  const [sfxVolume, setSfxVolume] = useState(0.5)
-  const [userInteracted, setUserInteracted] = useState(false)
+  const bgmTypeRef = useRef(null)
+  const [bgmEnabled, setBgmEnabled] = useState(() => localStorage.getItem('pokduck-bgm') !== 'off')
+  const [sfxEnabled, setSfxEnabled] = useState(() => localStorage.getItem('pokduck-sfx') !== 'off')
+  const [sfxVolume] = useState(0.5)
 
-  // 유저 첫 인터랙션 감지 (브라우저 자동재생 정책)
-  useEffect(() => {
-    const handleInteraction = () => setUserInteracted(true)
-    const events = ['click', 'touchstart', 'keydown']
-    events.forEach((e) => window.addEventListener(e, handleInteraction, { once: true }))
-    return () => events.forEach((e) => window.removeEventListener(e, handleInteraction))
-  }, [])
+  // 설정 저장
+  useEffect(() => { localStorage.setItem('pokduck-bgm', bgmEnabled ? 'on' : 'off') }, [bgmEnabled])
+  useEffect(() => { localStorage.setItem('pokduck-sfx', sfxEnabled ? 'on' : 'off') }, [sfxEnabled])
 
   const playBgm = (type) => {
-    if (bgmType === type && bgmRef.current && !bgmRef.current.paused) return
+    if (bgmTypeRef.current === type && bgmRef.current && !bgmRef.current.paused) return
 
-    // 이전 BGM 정지
     if (bgmRef.current) {
       bgmRef.current.pause()
       bgmRef.current = null
@@ -39,13 +31,22 @@ export function SoundProvider({ children }) {
     audio.loop = true
     audio.volume = BGM_VOLUMES[type] || 0.3
     bgmRef.current = audio
-    setBgmType(type)
+    bgmTypeRef.current = type
 
-    if (bgmEnabled && userInteracted) {
-      audio.play().catch(() => {})
-    } else {
-      // 아직 인터랙션 전이면 대기
-      pendingBgmRef.current = type
+    if (bgmEnabled) {
+      const tryPlay = () => {
+        audio.play().catch(() => {
+          // 자동재생 차단 시 클릭하면 재생
+          const retry = () => {
+            audio.play().catch(() => {})
+            document.removeEventListener('click', retry)
+            document.removeEventListener('touchstart', retry)
+          }
+          document.addEventListener('click', retry, { once: true })
+          document.addEventListener('touchstart', retry, { once: true })
+        })
+      }
+      tryPlay()
     }
   }
 
@@ -54,26 +55,25 @@ export function SoundProvider({ children }) {
       bgmRef.current.pause()
       bgmRef.current = null
     }
-    setBgmType(null)
-    pendingBgmRef.current = null
+    bgmTypeRef.current = null
   }
 
-  // 유저 인터랙션 감지되면 대기 중이던 BGM 바로 재생
-  useEffect(() => {
-    if (userInteracted && bgmEnabled && bgmRef.current && bgmRef.current.paused) {
-      bgmRef.current.play().catch(() => {})
+  // BGM 토글
+  const toggleBgm = () => {
+    const next = !bgmEnabled
+    setBgmEnabled(next)
+    if (bgmRef.current) {
+      if (next) {
+        bgmRef.current.play().catch(() => {})
+      } else {
+        bgmRef.current.pause()
+      }
     }
-  }, [userInteracted])
+  }
 
-  // BGM 켜기/끄기
-  useEffect(() => {
-    if (!bgmRef.current) return
-    if (bgmEnabled && userInteracted) {
-      bgmRef.current.play().catch(() => {})
-    } else {
-      bgmRef.current.pause()
-    }
-  }, [bgmEnabled])
+  const toggleSfx = () => {
+    setSfxEnabled((prev) => !prev)
+  }
 
   const playSfx = (name) => {
     if (!sfxEnabled) return
@@ -85,9 +85,8 @@ export function SoundProvider({ children }) {
   return (
     <SoundContext.Provider value={{
       playBgm, stopBgm,
-      bgmEnabled, setBgmEnabled,
-      sfxEnabled, setSfxEnabled,
-      sfxVolume, setSfxVolume,
+      bgmEnabled, toggleBgm,
+      sfxEnabled, toggleSfx,
       playSfx,
     }}>
       {children}
