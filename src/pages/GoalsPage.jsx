@@ -15,11 +15,8 @@ export default function GoalsPage() {
   const { habits, todayLogs, streaks, allDoneToday, add: addHabit, toggle: toggleHabit, remove: removeHabit } = useHabits()
   const { goals, add: addGoal, toggleComplete, remove: removeGoal } = useGoals()
 
-  // 학습 메모 입력
-  const [showAddNote, setShowAddNote] = useState(false)
-  const [noteTitle, setNoteTitle] = useState('')
-  const [noteContent, setNoteContent] = useState('')
-  const [noteAcademy, setNoteAcademy] = useState('')
+  // 학습 메모 입력 (한 줄)
+  const [quickNote, setQuickNote] = useState('')
 
   // 습관 입력
   const [showAddHabit, setShowAddHabit] = useState(false)
@@ -31,14 +28,20 @@ export default function GoalsPage() {
   const [goalTitle, setGoalTitle] = useState('')
   const [goalDate, setGoalDate] = useState('')
 
-  const handleAddNote = async () => {
-    if (!noteTitle.trim()) return
+  const handleQuickNote = async () => {
+    if (!quickNote.trim()) return
     playSfx('add')
-    await addNote(noteTitle.trim(), noteContent.trim(), noteAcademy || null)
-    setNoteTitle('')
-    setNoteContent('')
-    setNoteAcademy('')
-    setShowAddNote(false)
+    // 학원 자동 감지
+    const text = quickNote.trim()
+    let matchedAcademy = null
+    for (const a of academies) {
+      if (text.includes(a.name)) {
+        matchedAcademy = a.id
+        break
+      }
+    }
+    await addNote(text, '', matchedAcademy)
+    setQuickNote('')
   }
 
   const handleAddHabit = async () => {
@@ -91,28 +94,22 @@ export default function GoalsPage() {
 
           <section className="card">
             <h2>📝 학습 메모</h2>
-            {showAddNote ? (
-              <div className="add-form">
-                <select className="schedule-select" value={noteAcademy} onChange={(e) => setNoteAcademy(e.target.value)}>
-                  <option value="">학원 선택 (선택)</option>
-                  {academies.map((a) => (
-                    <option key={a.id} value={a.id}>{a.icon} {a.name}</option>
-                  ))}
-                </select>
-                <input type="text" className="schedule-input" placeholder="오늘 뭐 배웠어? (제목)" value={noteTitle} onChange={(e) => setNoteTitle(e.target.value)} />
-                <textarea className="note-textarea" placeholder="자세한 내용 (선택)" value={noteContent} onChange={(e) => setNoteContent(e.target.value)} rows={3} />
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button className="nickname-btn" onClick={handleAddNote} disabled={!noteTitle.trim()}>저장</button>
-                  <button className="nickname-btn" style={{ background: '#eee', color: '#666' }} onClick={() => setShowAddNote(false)}>취소</button>
-                </div>
-              </div>
-            ) : (
-              <button className="add-btn" onClick={() => setShowAddNote(true)}>+ 오늘 배운 것 기록하기</button>
-            )}
+            <div className="quick-note-row">
+              <input
+                type="text"
+                className="quick-note-input"
+                placeholder="오늘 뭐 배웠어? (예: 영어에서 I'd appreciate 배움)"
+                value={quickNote}
+                onChange={(e) => setQuickNote(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleQuickNote()}
+              />
+              <button className="quick-note-btn" onClick={handleQuickNote} disabled={!quickNote.trim()}>📝</button>
+            </div>
+            <p style={{ fontSize: '11px', color: '#bbb', marginTop: '4px' }}>학원 이름 포함하면 자동 분류! (예: "영어에서 ~~")</p>
 
-            {notes.length === 0 && !showAddNote && (
+            {notes.length === 0 && (
               <p style={{ color: '#aaa', fontSize: '14px', textAlign: 'center', padding: '20px 0' }}>
-                아직 메모가 없어요. 수업 끝나고 배운 것을 기록해보세요!
+                아직 메모가 없어요. 한 줄이라도 적어보세요!
               </p>
             )}
 

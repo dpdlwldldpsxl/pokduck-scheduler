@@ -669,6 +669,49 @@ header {
   white-space: nowrap;
 }
 
+/* 한 줄 메모 입력 */
+.quick-note-row {
+  display: flex;
+  gap: 8px;
+}
+
+.quick-note-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 20px;
+  font-size: 14px;
+  outline: none;
+  font-family: inherit;
+}
+
+.quick-note-input:focus {
+  border-color: #7cc47c;
+}
+
+.quick-note-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #7cc47c;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.quick-note-btn:hover {
+  background: #5aab5a;
+}
+
+.quick-note-btn:disabled {
+  background: #ddd;
+  cursor: not-allowed;
+}
+
 /* 학습 메모 */
 .note-textarea {
   width: 100%;

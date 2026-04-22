@@ -141,6 +141,32 @@ ${studyNotes?.length > 0
 
 위 정보를 바탕으로 이 사용자에게 맞춤형으로 대화하세요. 학습 메모가 있으면 배운 내용을 활용해서 복습을 도와주세요.`
 
+    // 학습 내용 자동 감지 → 메모 저장
+    const learnKeywords = ['배웠', '배운', '공부했', '연습했', '레슨에서', '수업에서', '학원에서']
+    if (learnKeywords.some((k) => message.includes(k))) {
+      // 학원 자동 매칭
+      let matchedAcademy = null
+      if (scheduleItems) {
+        for (const item of scheduleItems) {
+          if (item.academies?.name && message.includes(item.academies.name)) {
+            matchedAcademy = item.academy_id
+            break
+          }
+        }
+      }
+      const studiedAt = new Date().toISOString().split('T')[0]
+      const nextDate = new Date()
+      nextDate.setDate(nextDate.getDate() + 1)
+      await supabase.from('study_notes').insert({
+        user_id: user.id,
+        title: message.length > 50 ? message.slice(0, 50) + '...' : message,
+        content: message,
+        academy_id: matchedAcademy,
+        studied_at: studiedAt,
+        next_review: nextDate.toISOString().split('T')[0],
+      })
+    }
+
     // 유저 메시지 저장
     await supabase.from('coaching_messages').insert({
       conversation_id: conversationId,
