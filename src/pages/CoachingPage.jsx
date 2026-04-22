@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
 import { useConversations, useMessages } from '../hooks/useCoaching'
 import { useSound } from '../hooks/useSound'
+import CoachingSurvey from '../components/CoachingSurvey'
 import BottomNav from '../components/BottomNav'
 
 const TYPES = [
@@ -12,12 +14,26 @@ const TYPES = [
 ]
 
 export default function CoachingPage() {
+  const { user } = useAuth()
   const { conversations, create, remove } = useConversations()
   const [activeConv, setActiveConv] = useState(null)
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
+  const [hasSurvey, setHasSurvey] = useState(null)
   const { messages, addLocal, replaceLastAssistant, reload: reloadMessages } = useMessages(activeConv?.id)
   const { playSfx } = useSound()
+
+  useEffect(() => {
+    const checkSurvey = async () => {
+      const { data } = await supabase
+        .from('user_profile_survey')
+        .select('id')
+        .eq('user_id', user.id)
+        .single()
+      setHasSurvey(!!data)
+    }
+    checkSurvey()
+  }, [user])
   const messagesEndRef = useRef(null)
 
   useEffect(() => {
@@ -69,6 +85,17 @@ export default function CoachingPage() {
 
   const handleBack = () => {
     setActiveConv(null)
+  }
+
+  // 온보딩 설문
+  if (hasSurvey === false) {
+    return <CoachingSurvey onComplete={() => setHasSurvey(true)} />
+  }
+
+  if (hasSurvey === null) {
+    return <div style={{ display: 'flex', justifyContent: 'center', padding: '80px 0' }}>
+      <p style={{ color: '#7cc47c' }}>로딩 중...</p>
+    </div>
   }
 
   // 대화 목록 화면

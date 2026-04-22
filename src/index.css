@@ -4,6 +4,16 @@
   box-sizing: border-box;
 }
 
+html {
+  background: #c5d5c5;
+}
+
+@media (min-width: 500px) {
+  html {
+    background: linear-gradient(135deg, #a8c5a8 0%, #c5d5c5 50%, #a8c5a8 100%);
+  }
+}
+
 /* ── 인트로 오버레이 ── */
 #intro-overlay {
   position: fixed;
@@ -91,11 +101,21 @@
 
 body {
   font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
-  background: #f0f7f0;
+  background: #e0ede0;
   color: #333;
   max-width: 480px;
   margin: 0 auto;
   padding-bottom: 80px;
+  min-height: 100vh;
+}
+
+@media (min-width: 500px) {
+  body {
+    background: #d5ddd5;
+    border-left: 1px solid #c8d4c8;
+    border-right: 1px solid #c8d4c8;
+    box-shadow: 0 0 40px rgba(0,0,0,0.1);
+  }
 }
 
 /* 헤더 */
@@ -552,6 +572,77 @@ header {
 
 .congrats-btn:hover {
   background: #5aab5a;
+}
+
+/* 코칭 설문 */
+.survey-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.survey-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.survey-duck {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 3px solid #7cc47c;
+  object-fit: cover;
+  margin-bottom: 8px;
+}
+
+.survey-progress {
+  font-size: 13px;
+  color: #999;
+  font-weight: 600;
+}
+
+.survey-card {
+  width: 100%;
+  max-width: 380px;
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+.survey-question {
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 16px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.survey-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.survey-option {
+  padding: 14px 16px;
+  border: 1.5px solid #e8e8e8;
+  border-radius: 12px;
+  background: white;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: all 0.2s;
+}
+
+.survey-option:hover {
+  border-color: #7cc47c;
+  background: #f6fef6;
 }
 
 /* 코칭 - 대화 유형 선택 */
