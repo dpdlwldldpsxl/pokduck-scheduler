@@ -23,7 +23,7 @@ export function useConversations() {
     const titles = {
       general: '자유 대화',
       schedule: '일정 상담',
-      mental: '멘탈 케어',
+      mental: '마음 털기',
       study: '학습 조언',
     }
     const { data } = await supabase

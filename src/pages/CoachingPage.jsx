@@ -10,7 +10,7 @@ import BottomNav from '../components/BottomNav'
 const TYPES = [
   { key: 'general', label: '자유 대화', icon: '💬' },
   { key: 'schedule', label: '일정 상담', icon: '📅' },
-  { key: 'mental', label: '멘탈 케어', icon: '💚' },
+  { key: 'mental', label: '마음 털기', icon: '💭' },
   { key: 'study', label: '학습 조언', icon: '📚' },
 ]
 
@@ -21,7 +21,6 @@ const AMBIENCES = [
   { key: 'fire', emoji: '🔥', label: '불멍', group: 'nature' },
   { key: 'lofi', emoji: '🎧', label: '로파이', group: 'music' },
   { key: 'piano', emoji: '🎹', label: '피아노', group: 'music' },
-  { key: 'future', emoji: '✨', label: '퓨처베', group: 'music' },
   { key: 'hiphop', emoji: '💿', label: '힙합', group: 'music' },
   { key: 'edm', emoji: '🎛️', label: 'EDM', group: 'music' },
 ]
