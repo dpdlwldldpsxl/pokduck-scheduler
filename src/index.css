@@ -2107,3 +2107,47 @@ header {
 .energy-btn.selected .mood-label {
   color: #3d8b3d;
 }
+
+/* 코칭 화면 상단 앰비언트 선택 바 */
+.chat-ambience-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 8px 16px;
+  background: #f6fef6;
+  border-bottom: 1px solid #e8f2e8;
+}
+
+.amb-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: white;
+  border: 1.5px solid #e2ecdf;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  padding: 0;
+}
+
+.amb-btn:hover {
+  transform: translateY(-1px);
+  border-color: #c5d9c3;
+}
+
+.amb-btn:active {
+  transform: scale(0.92);
+}
+
+.amb-btn.selected {
+  background: #e6f7ee;
+  border-color: #7cc47c;
+  box-shadow: 0 2px 6px rgba(124, 196, 124, 0.3);
+}
+
+.amb-emoji {
+  font-size: 20px;
+  line-height: 1;
+}

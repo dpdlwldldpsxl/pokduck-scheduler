@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { useConversations, useMessages } from '../hooks/useCoaching'
 import { useSound } from '../hooks/useSound'
+import { useMood, MOODS } from '../hooks/useMood'
 import CoachingSurvey from '../components/CoachingSurvey'
 import BottomNav from '../components/BottomNav'
 
@@ -11,6 +12,13 @@ const TYPES = [
   { key: 'schedule', label: '일정 상담', icon: '📅' },
   { key: 'mental', label: '멘탈 케어', icon: '💚' },
   { key: 'study', label: '학습 조언', icon: '📚' },
+]
+
+const AMBIENCES = [
+  { key: 'rain', emoji: '🌧️', label: '비' },
+  { key: 'beach', emoji: '🌊', label: '파도' },
+  { key: 'forest', emoji: '🌳', label: '숲' },
+  { key: 'fire', emoji: '🔥', label: '불멍' },
 ]
 
 function formatMessage(text) {
@@ -32,7 +40,8 @@ export default function CoachingPage() {
   const [sending, setSending] = useState(false)
   const [hasSurvey, setHasSurvey] = useState(null)
   const { messages, addLocal, replaceLastAssistant, reload: reloadMessages } = useMessages(activeConv?.id)
-  const { playSfx } = useSound()
+  const { playSfx, playAmbience, stopAmbience, ambienceType } = useSound()
+  const { today: todayLog } = useMood()
 
   useEffect(() => {
     const checkSurvey = async () => {
@@ -52,6 +61,20 @@ export default function CoachingPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     if (!sending) inputRef.current?.focus()
   }, [messages, sending])
+
+  // 채팅 진입 → 앰비언트 재생, 나갈 때 정지
+  const isInChat = !!activeConv
+  useEffect(() => {
+    if (isInChat) {
+      const moodData = MOODS.find((m) => m.key === todayLog?.mood)
+      const defaultAmb = moodData?.ambience || 'rain'
+      playAmbience(defaultAmb)
+    }
+    return () => {
+      if (isInChat) stopAmbience()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isInChat])
 
   const handleNewConversation = async (type) => {
     playSfx('click')
@@ -263,6 +286,22 @@ export default function CoachingPage() {
         <span className="chat-category-badge">
           {TYPES.find((t) => t.key === activeConv.conversation_type)?.label || '자유 대화'}
         </span>
+      </div>
+
+      {/* 앰비언트 선택 바 (유저 결정권) */}
+      <div className="chat-ambience-row">
+        {AMBIENCES.map((a) => (
+          <button
+            key={a.key}
+            type="button"
+            className={`amb-btn ${ambienceType === a.key ? 'selected' : ''}`}
+            onClick={() => { playSfx('click'); playAmbience(a.key) }}
+            aria-label={a.label}
+            title={a.label}
+          >
+            <span className="amb-emoji">{a.emoji}</span>
+          </button>
+        ))}
       </div>
 
       <div className="chat-messages">

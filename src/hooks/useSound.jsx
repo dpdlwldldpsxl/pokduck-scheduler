@@ -12,12 +12,46 @@ const SFX_VOLUMES = {
   cancel: 0.3,
 }
 
+// Layer 2: 앰비언트 (공간감 배경음). MP3 포맷, 모두 루프.
+export const AMBIENCE_TRACKS = ['rain', 'beach', 'forest', 'fire']
+const AMBIENCE_VOLUME = 0.45
+const AMBIENCE_PATH = (name) => `/sounds/${name}.mp3`
+const FADE_MS = 700
+
+// setInterval 기반 선형 페이드
+function fadeTo(audio, target, duration, onDone) {
+  if (!audio) return
+  const start = audio.volume
+  const steps = 20
+  const delta = (target - start) / steps
+  const intervalMs = duration / steps
+  let i = 0
+  const t = setInterval(() => {
+    i++
+    const v = start + delta * i
+    audio.volume = Math.max(0, Math.min(1, v))
+    if (i >= steps) {
+      clearInterval(t)
+      audio.volume = target
+      onDone?.()
+    }
+  }, intervalMs)
+  return t
+}
+
 export function SoundProvider({ children }) {
   const bgmRef = useRef(null)
   const bgmTypeRef = useRef(null)
   const retryCleanupRef = useRef(null)
+
+  // 앰비언트 상태
+  const ambRef = useRef(null)
+  const ambTypeRef = useRef(null)
+  const ambFadeRef = useRef(null) // 진행 중인 fade interval
+
   const [bgmEnabled, setBgmEnabled] = useState(() => localStorage.getItem('pokduck-bgm') !== 'off')
   const [sfxEnabled, setSfxEnabled] = useState(() => localStorage.getItem('pokduck-sfx') !== 'off')
+  const [ambienceType, setAmbienceType] = useState(null) // UI 노출용
 
   useEffect(() => { localStorage.setItem('pokduck-bgm', bgmEnabled ? 'on' : 'off') }, [bgmEnabled])
   useEffect(() => { localStorage.setItem('pokduck-sfx', sfxEnabled ? 'on' : 'off') }, [sfxEnabled])
@@ -27,6 +61,13 @@ export function SoundProvider({ children }) {
     if (retryCleanupRef.current) {
       retryCleanupRef.current()
       retryCleanupRef.current = null
+    }
+  }
+
+  const clearAmbFade = () => {
+    if (ambFadeRef.current) {
+      clearInterval(ambFadeRef.current)
+      ambFadeRef.current = null
     }
   }
 
@@ -56,6 +97,9 @@ export function SoundProvider({ children }) {
     bgmTypeRef.current = type
 
     if (!bgmEnabled) return
+
+    // 앰비언트 재생 중이면 BGM을 mute 상태로 준비 (ambience가 우선)
+    if (ambRef.current) audio.volume = 0
 
     audio.play().catch(() => {
       // 자동재생 차단 시 첫 클릭에 재생
@@ -89,10 +133,18 @@ export function SoundProvider({ children }) {
   const toggleBgm = () => {
     const next = !bgmEnabled
     setBgmEnabled(next)
+    // BGM 객체 제어
     if (!next && bgmRef.current) {
       bgmRef.current.pause()
-    } else if (next && bgmRef.current) {
+    } else if (next && bgmRef.current && !ambRef.current) {
+      // 앰비언트 없을 때만 BGM 재생
       bgmRef.current.play().catch(() => {})
+    }
+    // 앰비언트도 함께 토글 (같은 "소리" 스위치)
+    if (!next && ambRef.current) {
+      ambRef.current.pause()
+    } else if (next && ambRef.current) {
+      ambRef.current.play().catch(() => {})
     }
   }
 
@@ -107,13 +159,94 @@ export function SoundProvider({ children }) {
     audio.play().catch(() => {})
   }
 
+  // ─── 앰비언트 Layer 2 ─────────────────────────────
+
+  // 앰비언트 재생 — BGM은 fade out, 앰비언트 fade in
+  const playAmbience = (type) => {
+    if (!AMBIENCE_TRACKS.includes(type)) return
+    // 이미 같은 걸 재생 중이면 무시
+    if (ambTypeRef.current === type && ambRef.current && !ambRef.current.paused) return
+
+    clearAmbFade()
+
+    // 이전 앰비언트가 있으면 crossfade (기존 out, 새거 in)
+    const old = ambRef.current
+    const audio = new Audio(AMBIENCE_PATH(type))
+    audio.loop = true
+    audio.volume = 0
+    ambRef.current = audio
+    ambTypeRef.current = type
+    setAmbienceType(type)
+
+    if (!bgmEnabled) return // 소리 OFF 상태면 준비만 하고 재생 X
+
+    audio.play().catch(() => {
+      // 자동재생 차단 시 첫 클릭에 재생
+      const retry = () => {
+        if (ambRef.current === audio && bgmEnabled) {
+          audio.play().catch(() => {})
+          fadeTo(audio, AMBIENCE_VOLUME, FADE_MS)
+        }
+        document.removeEventListener('click', retry)
+        document.removeEventListener('touchstart', retry)
+      }
+      document.addEventListener('click', retry, { once: true })
+      document.addEventListener('touchstart', retry, { once: true })
+    })
+
+    // BGM 볼륨 0으로 fade (소리 끄기는 아니고 mute — 나갈 때 복귀)
+    if (bgmRef.current) {
+      fadeTo(bgmRef.current, 0, FADE_MS)
+    }
+
+    // 이전 앰비언트 fade out 후 정리
+    if (old) {
+      fadeTo(old, 0, FADE_MS, () => {
+        old.pause()
+        old.src = ''
+      })
+    }
+
+    // 새 앰비언트 fade in
+    ambFadeRef.current = fadeTo(audio, AMBIENCE_VOLUME, FADE_MS)
+  }
+
+  // 앰비언트 정지 — BGM은 fade in 복귀
+  const stopAmbience = () => {
+    clearAmbFade()
+    const old = ambRef.current
+    ambRef.current = null
+    ambTypeRef.current = null
+    setAmbienceType(null)
+
+    if (old) {
+      fadeTo(old, 0, FADE_MS, () => {
+        old.pause()
+        old.src = ''
+      })
+    }
+
+    // BGM 볼륨 복귀
+    if (bgmRef.current && bgmEnabled) {
+      const targetVol = BGM_VOLUMES[bgmTypeRef.current] || 0.3
+      fadeTo(bgmRef.current, targetVol, FADE_MS)
+      // 혹시 일시정지 상태면 재생
+      if (bgmRef.current.paused) bgmRef.current.play().catch(() => {})
+    }
+  }
+
   // 컴포넌트 언마운트 시 정리
   useEffect(() => {
     return () => {
       cleanupRetry()
+      clearAmbFade()
       if (bgmRef.current) {
         bgmRef.current.pause()
         bgmRef.current.src = ''
+      }
+      if (ambRef.current) {
+        ambRef.current.pause()
+        ambRef.current.src = ''
       }
     }
   }, [])
@@ -124,6 +257,7 @@ export function SoundProvider({ children }) {
       bgmEnabled, toggleBgm,
       sfxEnabled, toggleSfx,
       playSfx,
+      playAmbience, stopAmbience, ambienceType,
     }}>
       {children}
     </SoundContext.Provider>

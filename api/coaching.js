@@ -49,6 +49,39 @@ const TYPE_PROMPTS = {
   study: loadPromptFile('study'),
 }
 
+// 시간대별 반응 톤 가이드 (KST 기준)
+function getTimeOfDay() {
+  const hour = new Date(
+    new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' })
+  ).getHours()
+  if (hour >= 5 && hour < 11) return 'morning'
+  if (hour >= 11 && hour < 17) return 'afternoon'
+  if (hour >= 17 && hour < 23) return 'evening'
+  return 'night'
+}
+
+const TIME_GUIDES = {
+  morning: `[지금 시간대: 아침 (5~11시)]
+- 오늘 일정 기반 **미리보기/설계 톤**. 복기·회고 톤 X
+- "오늘 ~ 있네, 뭐부터 할까?" 같은 플래닝 중심
+- 에너지 아직 안 올라온 상태 가정. 부담 작게, 우선순위 1~3개 수준`,
+
+  afternoon: `[지금 시간대: 낮/오후 (11~17시)]
+- **점검 톤**. 오전 한 일 간단 체크 + 오후 포커스 한 개
+- 점심 직후(12~14시)는 집중력 저점. 단순 작업 제안에 맞음
+- 오후 중반(15~17시)은 창의 회복 구간`,
+
+  evening: `[지금 시간대: 저녁 (17~23시)]
+- **복기/회고 톤**. "오늘 어땠어?" 지향
+- 하루 돌아보기 + 감정 정리 + 내일 씨앗 1개
+- 이 시간대 유저 에너지 낮음. 긴 대화 유도 X. 짧고 따뜻하게`,
+
+  night: `[지금 시간대: 심야 (23시~새벽)]
+- **짧고 부드럽게**. 밤늦게 앱 켠 유저는 감정 이슈 가능성
+- 수면 리듬 배려. 자극적인 질문·조언 X
+- "오늘 내려놓고 쉴 준비" 쪽으로 유도`,
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
@@ -245,11 +278,16 @@ export default async function handler(req, res) {
     // 대화 유형에 맞는 전문 프롬프트 (층2 + 층4)
     const type = TYPE_PROMPTS[conversationType] ? conversationType : 'general'
     const typePrompt = TYPE_PROMPTS[type] || ''
+    const timeOfDay = getTimeOfDay()
+    const timeGuide = TIME_GUIDES[timeOfDay]
 
     const contextPrompt = `${BASE_PROMPT}
 
 # ━━━ 이 대화 유형 전용 가이드 (${type}) ━━━
 ${typePrompt}
+
+# ━━━ 시간대 가이드 ━━━
+${timeGuide}
 
 # ━━━ 이 사용자에 대한 실시간 데이터 (층3) ━━━
 

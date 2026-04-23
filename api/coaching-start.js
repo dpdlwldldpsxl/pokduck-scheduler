@@ -68,6 +68,23 @@ const ENERGY_LABELS = {
   sick: '🤕 아픔',
 }
 
+function getTimeOfDay() {
+  const hour = new Date(
+    new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' })
+  ).getHours()
+  if (hour >= 5 && hour < 11) return 'morning'
+  if (hour >= 11 && hour < 17) return 'afternoon'
+  if (hour >= 17 && hour < 23) return 'evening'
+  return 'night'
+}
+
+const TIME_OPENER_GUIDES = {
+  morning: `[시간대: 아침] 오프닝은 오늘 하루 **설계 톤**. "오늘 뭐부터 할래?" 같은 플래닝 질문 지향. 복기/회고 질문 X.`,
+  afternoon: `[시간대: 낮/오후] 오프닝은 **점검 톤**. "점심 먹었어? 오후 뭐 해?" 같은 확인 질문 지향.`,
+  evening: `[시간대: 저녁] 오프닝은 **복기 톤**. "오늘 어땠어?" 같은 돌아보기 질문 지향. 단, 구체 질문으로.`,
+  night: `[시간대: 심야] 오프닝은 **부드럽고 짧게**. 자극적인 질문 X. "오늘 내려놓자" 뉘앙스.`,
+}
+
 const FALLBACK_OPENER = {
   general: '안녕! 오늘 어떻게 지냈는지 편하게 말해봐 🦆',
   schedule: '안녕! 이번 주 일정 같이 볼까? 제일 부담되는 날이 언제야?',
@@ -244,8 +261,13 @@ export default async function handler(req, res) {
     const typePrompt = TYPE_PROMPTS[type] || ''
     const dataLevel = assessDataLevel({ moodLogs, habits, scheduleItems, studyNotes, survey })
     const levelInstruction = LEVEL_INSTRUCTIONS[dataLevel]
+    const timeOfDay = getTimeOfDay()
+    const timeGuide = TIME_OPENER_GUIDES[timeOfDay]
 
     const prompt = `${BASE_PROMPT}
+
+# ━━━ 시간대 ━━━
+${timeGuide}
 
 # ━━━ 이 대화 유형 가이드 (${type}) ━━━
 ${typePrompt}
