@@ -23,7 +23,7 @@ const AMBIENCES = [
   { key: 'piano', emoji: '🎹', label: '피아노', group: 'music' },
   { key: 'future', emoji: '✨', label: '설렘', group: 'music' },
   { key: 'hiphop', emoji: '💿', label: '플로우', group: 'music' },
-  { key: 'edm', emoji: '⚡', label: '활력', group: 'music' },
+  { key: 'edm', emoji: '🎛️', label: 'EDM', group: 'music' },
 ]
 
 function formatMessage(text) {
