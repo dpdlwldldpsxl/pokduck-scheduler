@@ -103,7 +103,7 @@ export default function GoalsPage() {
         </p>
       </div>
       <div style={{ padding: '20px 16px 0' }}>
-        <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '12px' }}>🎯 목표</h2>
+        <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '12px' }}>📒 기록</h2>
         <div className="goals-tabs">
           {TABS.map((t) => (
             <button key={t} className={`goals-tab${tab === t ? ' active' : ''}`} onClick={() => { playSfx('click'); setTab(t) }}>
