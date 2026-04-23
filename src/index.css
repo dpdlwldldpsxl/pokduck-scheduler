@@ -538,6 +538,36 @@ header {
   line-height: 1.6;
 }
 
+.suggestion-row {
+  align-items: flex-start;
+}
+
+.suggestion-emoji {
+  font-size: 15px;
+  margin-right: 2px;
+}
+
+.suggestion-action {
+  margin-top: 8px;
+  background: #7cc47c;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.suggestion-action:hover {
+  background: #6bb36b;
+}
+
+.suggestion-action:active {
+  transform: scale(0.96);
+}
+
 /* 축하 팝업 */
 .congrats-overlay {
   position: fixed;

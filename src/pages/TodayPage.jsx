@@ -4,6 +4,8 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { useTodaySchedule } from '../hooks/useSchedule'
 import { useMood, MOODS, ENERGIES } from '../hooks/useMood'
+import { useStudyNotes, useHabits } from '../hooks/useGoals'
+import { getSmartSuggestion } from '../lib/smartSuggestion'
 import Header from '../components/Header'
 import SpeechBubble from '../components/SpeechBubble'
 import TaskList from '../components/TaskList'
@@ -19,6 +21,8 @@ export default function TodayPage() {
   const dailyMsg = getDailyMessage()
   const { items: todaySchedule, loading: scheduleLoading, reload: reloadSchedule } = useTodaySchedule()
   const { today: todayLog, setMood: setUserMood, setEnergy: setUserEnergy, clearMood, clearEnergy } = useMood()
+  const { dueForReview } = useStudyNotes()
+  const { habits, todayLogs: todayHabitLogs } = useHabits()
   const { playBgm, playSfx } = useSound()
 
   useEffect(() => {
@@ -36,28 +40,21 @@ export default function TodayPage() {
   const [showCongrats, setShowCongrats] = useState(false)
   const [suggestion, setSuggestion] = useState(null)
 
-  // 일정 기반 자동 제안
+  // 스마트 추천 엔진 — 데이터 + 시간대 + 뇌과학 리듬 기반
   useEffect(() => {
-    if (scheduleLoading || todaySchedule.length === 0) return
+    if (scheduleLoading) return
 
-    const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }))
-    const currentHour = now.getHours()
-    const names = todaySchedule.map((s) => s.title).join(', ')
-
-    if (todaySchedule.length >= 3) {
-      setSuggestion(`오늘 일정이 ${todaySchedule.length}개나 있네! 빡센 하루인데, 중간중간 쉬어가면서 하자 🦆`)
-    } else if (currentHour < 12 && todaySchedule.some((s) => {
-      const h = parseInt(s.start_time)
-      return h >= 18
-    })) {
-      const evening = todaySchedule.find((s) => parseInt(s.start_time) >= 18)
-      setSuggestion(`저녁에 ${evening?.title}이 있으니까, 오전에 할 일 먼저 끝내두는 건 어때?`)
-    } else if (todaySchedule.length === 1) {
-      setSuggestion(`오늘은 ${todaySchedule[0].title}만 있으니까 여유롭네! 빈 시간에 복습이나 할까? 🦆`)
-    } else {
-      setSuggestion(`오늘 ${names} 있어! 화이팅!`)
-    }
-  }, [todaySchedule, scheduleLoading])
+    const next = getSmartSuggestion({
+      displayName: profile?.display_name || '너',
+      todaySchedule,
+      dueStudyNotes: dueForReview || [],
+      habits: habits || [],
+      todayHabitLogs: todayHabitLogs || [],
+      todayMood: todayLog?.mood || null,
+      todayEnergy: todayLog?.energy || null,
+    })
+    setSuggestion(next)
+  }, [todaySchedule, scheduleLoading, dueForReview, habits, todayHabitLogs, todayLog, profile])
 
   useEffect(() => {
     loadProfile()
@@ -279,7 +276,19 @@ export default function TodayPage() {
         <section className="card suggestion-card">
           <div className="suggestion-row">
             <img src="/images/pokduck_default.png" alt="폭덕이" className="suggestion-avatar" />
-            <p className="suggestion-text">{suggestion}</p>
+            <div style={{ flex: 1 }}>
+              <p className="suggestion-text">
+                <span className="suggestion-emoji">{suggestion.emoji}</span> {suggestion.text}
+              </p>
+              {suggestion.action && (
+                <button
+                  className="suggestion-action"
+                  onClick={() => { playSfx('click'); navigate(suggestion.action.path) }}
+                >
+                  {suggestion.action.label} →
+                </button>
+              )}
+            </div>
           </div>
         </section>
       )}
