@@ -23,6 +23,9 @@ const AMBIENCE_FILES = {
   fire: ['fire.mp3'],
   lofi: ['lofi.mp3', 'beats.mp3'], // 둘 다 로파이 장르 — 호출할 때마다 랜덤
   piano: ['piano.mp3'],
+  future: ['future.mp3'],
+  hiphop: ['hiphop.mp3'],
+  edm: ['edm.mp3'],
 }
 export const AMBIENCE_TRACKS = Object.keys(AMBIENCE_FILES)
 const AMBIENCE_VOLUME = 0.45
