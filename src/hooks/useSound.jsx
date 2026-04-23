@@ -12,8 +12,10 @@ const SFX_VOLUMES = {
   cancel: 0.3,
 }
 
-// Layer 2: 앰비언트 (공간감 배경음). MP3 포맷, 모두 루프.
-export const AMBIENCE_TRACKS = ['rain', 'beach', 'forest', 'fire']
+// Layer 2: 앰비언트 (공간감 배경음 + 집중 음악). MP3 포맷, 모두 루프.
+// 자연(rain/beach/forest/fire) — 복기/쉼
+// 음악(lofi/beats/piano) — 집중/기분 전환
+export const AMBIENCE_TRACKS = ['rain', 'beach', 'forest', 'fire', 'lofi', 'beats', 'piano']
 const AMBIENCE_VOLUME = 0.45
 const AMBIENCE_PATH = (name) => `/sounds/${name}.mp3`
 const FADE_MS = 700

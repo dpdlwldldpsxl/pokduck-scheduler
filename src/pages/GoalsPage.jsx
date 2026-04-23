@@ -96,6 +96,12 @@ export default function GoalsPage() {
 
   return (
     <>
+      <div className="page-greet">
+        <img src="/images/pokduck_default.png" alt="폭덕이" className="page-greet-avatar" />
+        <p className="page-greet-text">
+          여긴 <strong>기록 탭</strong>이야. 메모·습관·목표 — 쌓이는 게 네 자산 🦆
+        </p>
+      </div>
       <div style={{ padding: '20px 16px 0' }}>
         <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '12px' }}>🎯 목표</h2>
         <div className="goals-tabs">

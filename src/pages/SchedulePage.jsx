@@ -149,6 +149,12 @@ export default function SchedulePage() {
 
   return (
     <>
+      <div className="page-greet">
+        <img src="/images/pokduck_default.png" alt="폭덕이" className="page-greet-avatar" />
+        <p className="page-greet-text">
+          여긴 <strong>일정 탭</strong>이야. 학원·회사 다 적어두면 내가 패턴 봐줄게 🦆
+        </p>
+      </div>
       <div style={{ padding: '20px 16px 0' }}>
         <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '16px' }}>📅 일정 관리</h2>
       </div>

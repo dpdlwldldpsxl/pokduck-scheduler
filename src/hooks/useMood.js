@@ -7,7 +7,7 @@ export const MOODS = [
   { key: 'angry', emoji: '😤', label: '짜증', ambience: 'beach' },
   { key: 'complex', emoji: '🤔', label: '복잡', ambience: 'forest' },
   { key: 'calm', emoji: '😌', label: '평온', ambience: 'rain' },
-  { key: 'happy', emoji: '😊', label: '좋음', ambience: 'beach' },
+  { key: 'happy', emoji: '😊', label: '좋음', ambience: 'piano' },
 ]
 
 export const ENERGIES = [

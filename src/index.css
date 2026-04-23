@@ -2108,28 +2108,40 @@ header {
   color: #3d8b3d;
 }
 
-/* 코칭 화면 상단 앰비언트 선택 바 */
+/* 코칭 화면 상단 앰비언트 선택 영역 */
+.chat-ambience-wrap {
+  background: #f6fef6;
+  border-bottom: 1px solid #e8f2e8;
+  padding: 8px 12px 10px;
+}
+
+.chat-ambience-hint {
+  font-size: 11px;
+  color: #6a9b6a;
+  text-align: center;
+  margin-bottom: 6px;
+}
+
 .chat-ambience-row {
   display: flex;
   justify-content: center;
-  gap: 10px;
-  padding: 8px 16px;
-  background: #f6fef6;
-  border-bottom: 1px solid #e8f2e8;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .amb-btn {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  gap: 2px;
+  min-width: 46px;
+  padding: 6px 4px;
   background: white;
   border: 1.5px solid #e2ecdf;
-  border-radius: 50%;
+  border-radius: 12px;
   cursor: pointer;
   transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
-  padding: 0;
 }
 
 .amb-btn:hover {
@@ -2148,6 +2160,43 @@ header {
 }
 
 .amb-emoji {
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1;
+}
+
+.amb-label {
+  font-size: 10px;
+  color: #5a8a5a;
+  font-weight: 600;
+}
+
+.amb-btn.selected .amb-label {
+  color: #2d5a2d;
+}
+
+/* 페이지 상단 폭덕이 인사 카드 (NPC 스타일) */
+.page-greet {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  margin: 14px 16px 0;
+  background: #fffef4;
+  border: 1.5px solid #f2ecd7;
+  border-radius: 16px;
+}
+
+.page-greet-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.page-greet-text {
+  font-size: 13px;
+  color: #5b4d1f;
+  line-height: 1.4;
 }

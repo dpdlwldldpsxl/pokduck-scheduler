@@ -15,10 +15,13 @@ const TYPES = [
 ]
 
 const AMBIENCES = [
-  { key: 'rain', emoji: '🌧️', label: '비' },
-  { key: 'beach', emoji: '🌊', label: '파도' },
-  { key: 'forest', emoji: '🌳', label: '숲' },
-  { key: 'fire', emoji: '🔥', label: '불멍' },
+  { key: 'rain', emoji: '🌧️', label: '비', group: 'nature' },
+  { key: 'beach', emoji: '🌊', label: '파도', group: 'nature' },
+  { key: 'forest', emoji: '🌳', label: '숲', group: 'nature' },
+  { key: 'fire', emoji: '🔥', label: '불멍', group: 'nature' },
+  { key: 'lofi', emoji: '🎧', label: '로파이', group: 'music' },
+  { key: 'beats', emoji: '🎼', label: '비트', group: 'music' },
+  { key: 'piano', emoji: '🎹', label: '피아노', group: 'music' },
 ]
 
 function formatMessage(text) {
@@ -226,6 +229,12 @@ export default function CoachingPage() {
   if (!activeConv) {
     return (
       <>
+        <div className="page-greet">
+          <img src="/images/pokduck_default.png" alt="폭덕이" className="page-greet-avatar" />
+          <p className="page-greet-text">
+            여긴 <strong>코칭 탭</strong>이야. 데이터 먼저 보고 내가 말 걸어줄게 🦆
+          </p>
+        </div>
         <div style={{ padding: '20px 16px 0' }}>
           <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '4px' }}>🤖 AI 코칭</h2>
           <p style={{ fontSize: '13px', color: '#888', marginBottom: '16px' }}>폭덕이에게 뭐든 물어봐!</p>
@@ -289,19 +298,23 @@ export default function CoachingPage() {
       </div>
 
       {/* 앰비언트 선택 바 (유저 결정권) */}
-      <div className="chat-ambience-row">
-        {AMBIENCES.map((a) => (
-          <button
-            key={a.key}
-            type="button"
-            className={`amb-btn ${ambienceType === a.key ? 'selected' : ''}`}
-            onClick={() => { playSfx('click'); playAmbience(a.key) }}
-            aria-label={a.label}
-            title={a.label}
-          >
-            <span className="amb-emoji">{a.emoji}</span>
-          </button>
-        ))}
+      <div className="chat-ambience-wrap">
+        <p className="chat-ambience-hint">🦆 배경 사운드 — 기분 따라 골라봐</p>
+        <div className="chat-ambience-row">
+          {AMBIENCES.map((a) => (
+            <button
+              key={a.key}
+              type="button"
+              className={`amb-btn ${ambienceType === a.key ? 'selected' : ''}`}
+              onClick={() => { playSfx('click'); playAmbience(a.key) }}
+              aria-label={a.label}
+              title={a.label}
+            >
+              <span className="amb-emoji">{a.emoji}</span>
+              <span className="amb-label">{a.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="chat-messages">
