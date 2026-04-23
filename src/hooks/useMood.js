@@ -10,6 +10,14 @@ export const MOODS = [
   { key: 'happy', emoji: '😊', label: '좋음', ambience: 'cafe' },
 ]
 
+export const ENERGIES = [
+  { key: 'tired', emoji: '😴', label: '피곤' },
+  { key: 'normal', emoji: '😶', label: '보통' },
+  { key: 'good', emoji: '💪', label: '좋음' },
+  { key: 'foggy', emoji: '😵‍💫', label: '멍함' },
+  { key: 'sick', emoji: '🤕', label: '아픔' },
+]
+
 function todayKst() {
   const kst = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }))
   return kst.toISOString().split('T')[0]
@@ -17,8 +25,8 @@ function todayKst() {
 
 export function useMood() {
   const { user } = useAuth()
-  const [todayMood, setTodayMood] = useState(null)
-  const [recentMoods, setRecentMoods] = useState([])
+  const [today, setToday] = useState(null)
+  const [recent, setRecent] = useState([])
 
   const load = useCallback(async () => {
     if (!user) return
@@ -27,47 +35,95 @@ export function useMood() {
     const since = sevenDaysAgo.toISOString().split('T')[0]
     const { data } = await supabase
       .from('mood_logs')
-      .select('mood, logged_at, note')
+      .select('id, mood, energy, logged_at, note')
       .eq('user_id', user.id)
       .gte('logged_at', since)
       .order('logged_at', { ascending: false })
     if (data) {
-      setRecentMoods(data)
+      setRecent(data)
       const t = todayKst()
-      setTodayMood(data.find((m) => m.logged_at === t) || null)
+      setToday(data.find((m) => m.logged_at === t) || null)
     }
   }, [user])
 
   useEffect(() => { load() }, [load])
 
-  const setMood = async (mood) => {
-    if (!user) return
+  // 필드 하나만 업서트 — 나머지 필드 보존 (기분만 찍고 에너지 유지 등)
+  const upsertField = async (field, value) => {
+    if (!user) return null
     const t = todayKst()
-    const { data } = await supabase
+    const { data: existing } = await supabase
       .from('mood_logs')
-      .upsert(
-        { user_id: user.id, mood, logged_at: t },
-        { onConflict: 'user_id,logged_at' }
-      )
-      .select()
-      .single()
-    if (data) {
-      setTodayMood(data)
-      setRecentMoods((prev) => {
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('logged_at', t)
+      .maybeSingle()
+
+    let row
+    if (existing) {
+      const { data } = await supabase
+        .from('mood_logs')
+        .update({ [field]: value })
+        .eq('id', existing.id)
+        .select()
+        .single()
+      row = data
+    } else {
+      const { data } = await supabase
+        .from('mood_logs')
+        .insert({ user_id: user.id, logged_at: t, [field]: value })
+        .select()
+        .single()
+      row = data
+    }
+
+    if (row) {
+      setToday(row)
+      setRecent((prev) => {
         const without = prev.filter((m) => m.logged_at !== t)
-        return [data, ...without].sort((a, b) => b.logged_at.localeCompare(a.logged_at))
+        return [row, ...without].sort((a, b) => b.logged_at.localeCompare(a.logged_at))
       })
     }
-    return data
+    return row
   }
 
-  const clearToday = async () => {
-    if (!user || !todayMood) return
-    const t = todayKst()
-    await supabase.from('mood_logs').delete().eq('user_id', user.id).eq('logged_at', t)
-    setTodayMood(null)
-    setRecentMoods((prev) => prev.filter((m) => m.logged_at !== t))
+  const setMood = (mood) => upsertField('mood', mood)
+  const setEnergy = (energy) => upsertField('energy', energy)
+
+  // 필드 하나 지움. 둘 다 비면 행 삭제.
+  const clearField = async (field) => {
+    if (!user || !today) return
+    const remaining = { ...today, [field]: null }
+    if (!remaining.mood && !remaining.energy) {
+      await supabase.from('mood_logs').delete().eq('id', today.id)
+      setToday(null)
+      setRecent((prev) => prev.filter((m) => m.id !== today.id))
+    } else {
+      const { data } = await supabase
+        .from('mood_logs')
+        .update({ [field]: null })
+        .eq('id', today.id)
+        .select()
+        .single()
+      if (data) {
+        setToday(data)
+        setRecent((prev) => prev.map((m) => (m.id === data.id ? data : m)))
+      }
+    }
   }
 
-  return { todayMood, recentMoods, setMood, clearToday, reload: load }
+  const clearMood = () => clearField('mood')
+  const clearEnergy = () => clearField('energy')
+
+  return {
+    today,           // 오늘 로우 (mood, energy 둘 다 담김)
+    todayMood: today, // 하위호환 — 기존 consumers 위해 유지
+    recentMoods: recent,
+    recent,
+    setMood,
+    setEnergy,
+    clearMood,
+    clearEnergy,
+    reload: load,
+  }
 }

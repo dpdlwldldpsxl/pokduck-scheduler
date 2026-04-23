@@ -60,11 +60,60 @@ const MOOD_LABELS = {
   happy: '😊 좋음',
 }
 
+const ENERGY_LABELS = {
+  tired: '😴 피곤',
+  normal: '😶 보통',
+  good: '💪 좋음',
+  foggy: '😵‍💫 멍함',
+  sick: '🤕 아픔',
+}
+
 const FALLBACK_OPENER = {
   general: '안녕! 오늘 어떻게 지냈는지 편하게 말해봐 🦆',
   schedule: '안녕! 이번 주 일정 같이 볼까? 제일 부담되는 날이 언제야?',
   mental: '안녕. 요즘 마음 어때? 편하게 한 마디만 해줘도 돼.',
   study: '안녕! 최근에 배운 것 중에 머리에 제일 많이 남은 게 뭐야?',
+}
+
+// 데이터 누적도 평가 — 어떤 오프닝 프롬프트 쓸지 결정
+function assessDataLevel({ moodLogs, habits, scheduleItems, studyNotes, survey }) {
+  const moodDays = moodLogs?.length || 0
+  const habitCount = habits?.length || 0
+  const scheduleCount = scheduleItems?.length || 0
+  const studyCount = studyNotes?.length || 0
+  const hasSurvey = !!survey
+
+  const totalSignals =
+    moodDays + habitCount + scheduleCount + studyCount + (hasSurvey ? 1 : 0)
+
+  if (totalSignals === 0) return 'zero'
+  if (moodDays < 3 && studyCount < 2 && totalSignals < 5) return 'light'
+  return 'rich'
+}
+
+const LEVEL_INSTRUCTIONS = {
+  zero: `
+[데이터 상태: ZERO — 유저를 처음 만난 상태]
+- 데이터 인용 **금지** (인용할 게 없음)
+- 반갑게 인사 + 폭덕이가 뭐 해주는지 한 줄 소개 + 가벼운 질문 1개
+- 질문은 답하기 쉬운 것: "오늘 뭐 할 예정이야?" / "요즘 뭐 배우고 있어?"
+- "데이터 쌓이면 도움 커져" 같은 안내는 대화 뒤에 (첫 오프닝엔 X)
+- 예시: "반가워! 🦆 나는 너의 하루를 같이 정리해주는 폭덕이야. 오늘 뭐 할 예정이야?"`,
+
+  light: `
+[데이터 상태: LIGHT — 데이터가 조금 쌓이기 시작함]
+- 있는 데이터 **1개만** 가볍게 언급 (없는 건 언급 X)
+- 패턴 해석 **금지** (데이터 부족)
+- 구체 질문으로 대화 시작
+- 예시: "오! 이번 주 영어 등록해놨네. 오늘은 영어 수업 어땠어?"
+- 예시: "어제 😌 평온으로 기록했네. 오늘은 어때?"`,
+
+  rich: `
+[데이터 상태: RICH — 충분한 데이터로 본격 분석 가능]
+- 여러 데이터 교차 분석해서 **가장 눈에 띄는 패턴 1개** 짚음
+- 맹점/이슈 탐지 OK
+- 구체 질문으로 마무리
+- 예시: "민희야, 지난주부터 야근 2일이랑 필라테스 0회 겹쳤네. 몸이 쉬어달라는 거 같은데, 이번 주는 좀 괜찮아?"`,
 }
 
 export default async function handler(req, res) {
@@ -123,7 +172,7 @@ export default async function handler(req, res) {
     const [{ data: moodLogs }, { data: habits }, { data: habitLogs }] = await Promise.all([
       supabase
         .from('mood_logs')
-        .select('mood, logged_at')
+        .select('mood, energy, logged_at')
         .eq('user_id', user.id)
         .gte('logged_at', since)
         .order('logged_at', { ascending: false }),
@@ -140,17 +189,34 @@ export default async function handler(req, res) {
       ? scheduleItems.map((s) => `${days[s.day_of_week]} ${s.start_time?.slice(0, 5)} ${s.title}`).join('\n')
       : '일정 없음'
 
+    const moodEntries = (moodLogs || []).filter((m) => m.mood)
+    const energyEntries = (moodLogs || []).filter((m) => m.energy)
+
     let moodText = '기분 기록 없음'
-    if (moodLogs?.length) {
+    if (moodEntries.length) {
       const counts = {}
-      moodLogs.forEach((m) => { counts[m.mood] = (counts[m.mood] || 0) + 1 })
+      moodEntries.forEach((m) => { counts[m.mood] = (counts[m.mood] || 0) + 1 })
       const dominant = Object.entries(counts)
         .sort((a, b) => b[1] - a[1])
         .map(([m, n]) => `${MOOD_LABELS[m]} ${n}일`)
         .join(', ')
-      moodText = `최근 ${moodLogs.length}일: ${dominant}`
-      if ((counts.complex || 0) >= 3) moodText += ' / ⚠️ 복잡이 많음'
+      moodText = `최근 ${moodEntries.length}일 기분: ${dominant}`
+      if ((counts.complex || 0) >= 3) moodText += ' / ⚠️ 복잡 다수'
       if ((counts.burnout || 0) >= 2) moodText += ' / ⚠️ 번아웃 신호'
+    }
+
+    let energyText = '에너지 기록 없음'
+    if (energyEntries.length) {
+      const counts = {}
+      energyEntries.forEach((m) => { counts[m.energy] = (counts[m.energy] || 0) + 1 })
+      const dominant = Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .map(([e, n]) => `${ENERGY_LABELS[e]} ${n}일`)
+        .join(', ')
+      energyText = `최근 ${energyEntries.length}일 에너지: ${dominant}`
+      if ((counts.sick || 0) >= 2) energyText += ' / ⚠️ 아픔 다수'
+      if ((counts.foggy || 0) >= 3) energyText += ' / ⚠️ 브레인포그 지속'
+      if ((counts.tired || 0) >= 4) energyText += ' / ⚠️ 피곤 누적'
     }
 
     let habitText = '습관 없음'
@@ -176,6 +242,8 @@ export default async function handler(req, res) {
       : '설문 없음'
 
     const typePrompt = TYPE_PROMPTS[type] || ''
+    const dataLevel = assessDataLevel({ moodLogs, habits, scheduleItems, studyNotes, survey })
+    const levelInstruction = LEVEL_INSTRUCTIONS[dataLevel]
 
     const prompt = `${BASE_PROMPT}
 
@@ -189,20 +257,17 @@ ${typePrompt}
 [주간 일정]
 ${scheduleText}
 [7일 기분 트렌드] ${moodText}
+[7일 에너지/몸 상태] ${energyText}
 [7일 습관] ${habitText}
 [최근 학습 메모]
 ${studyText}
 
-# ━━━ 지시 ━━━
-위 데이터에서 **가장 눈에 띄는 패턴/이슈 1개**를 골라 오프닝을 만들어.
-규칙대로 3~4문장. 질문 1개로 마무리.
-아래 예시 형식 참고:
+# ━━━ 데이터 누적도 기반 행동 지시 ━━━
+${levelInstruction}
 
-"민희야, 지난주부터 야근 2일이랑 필라테스 0회 겹쳤네. 몸이 쉬어달라는 거 같은데, 이번 주는 좀 괜찮아?"
-
-"OO아, 최근 3일이 🤔 복잡이네. 감정 하나로 못 고르는 중인 거지? 오늘은 그중 어떤 게 제일 크게 남아?"
-
-지금 오프닝 1개만 작성해. 다른 설명 없이.`
+# ━━━ 공통 지시 ━━━
+위 가이드에 맞춰 오프닝 1개만 작성. 3~4문장 이내. 질문 1개로 마무리.
+다른 설명/주석 없이 오프닝 문장만 출력.`
 
     const geminiRes = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,

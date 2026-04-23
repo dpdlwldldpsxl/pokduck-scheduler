@@ -117,7 +117,7 @@ export default async function handler(req, res) {
 
     const { data: moodLogs } = await supabase
       .from('mood_logs')
-      .select('mood, logged_at')
+      .select('mood, energy, logged_at')
       .eq('user_id', user.id)
       .gte('logged_at', since)
       .order('logged_at', { ascending: false })
@@ -150,7 +150,7 @@ export default async function handler(req, res) {
 주요 목표: ${survey.main_goal || '미응답'}`
       : '설문 미완료'
 
-    // 기분 트렌드 텍스트 (단일 기록보다 패턴 해석 우선)
+    // 기분/에너지 트렌드 텍스트 (단일 기록보다 패턴 해석 우선)
     const MOOD_LABELS = {
       burnout: '😫 번아웃',
       angry: '😤 짜증',
@@ -158,29 +158,71 @@ export default async function handler(req, res) {
       calm: '😌 평온',
       happy: '😊 좋음',
     }
+    const ENERGY_LABELS = {
+      tired: '😴 피곤',
+      normal: '😶 보통',
+      good: '💪 좋음',
+      foggy: '😵‍💫 멍함',
+      sick: '🤕 아픔',
+    }
+
+    const moodEntries = (moodLogs || []).filter((m) => m.mood)
+    const energyEntries = (moodLogs || []).filter((m) => m.energy)
+
     let moodText
-    if (!moodLogs || moodLogs.length === 0) {
+    if (moodEntries.length === 0) {
       moodText = '기분 기록 없음'
     } else {
       const counts = { burnout: 0, angry: 0, complex: 0, calm: 0, happy: 0 }
-      moodLogs.forEach((m) => { counts[m.mood] = (counts[m.mood] || 0) + 1 })
+      moodEntries.forEach((m) => { counts[m.mood] = (counts[m.mood] || 0) + 1 })
       const dominant = Object.entries(counts)
         .filter(([, n]) => n > 0)
         .sort((a, b) => b[1] - a[1])
         .map(([m, n]) => `${MOOD_LABELS[m]} ${n}일`)
         .join(', ')
-      const timeline = moodLogs
+      const timeline = moodEntries
         .map((m) => `${m.logged_at.slice(5)} ${MOOD_LABELS[m.mood]}`)
         .join(' → ')
-      moodText = `최근 ${moodLogs.length}일 분포: ${dominant}
+      moodText = `최근 ${moodEntries.length}일 기분: ${dominant}
 시간순: ${timeline}`
-      if (counts.complex >= 3) {
-        moodText += `\n⚠️ 🤔 복잡이 3일 이상 → 감정 하나로 못 고르는 상태. 명료화 질문 우선.`
-      }
-      if (counts.burnout >= 2) {
-        moodText += `\n⚠️ 번아웃 2일+ → 쉼 권유 대상.`
+      if (counts.complex >= 3) moodText += `\n⚠️ 🤔 복잡 3일+ → 감정 혼합 상태. 명료화 질문 우선.`
+      if (counts.burnout >= 2) moodText += `\n⚠️ 번아웃 2일+ → 쉼 권유 대상.`
+    }
+
+    let energyText
+    if (energyEntries.length === 0) {
+      energyText = '에너지 기록 없음'
+    } else {
+      const counts = { tired: 0, normal: 0, good: 0, foggy: 0, sick: 0 }
+      energyEntries.forEach((m) => { counts[m.energy] = (counts[m.energy] || 0) + 1 })
+      const dominant = Object.entries(counts)
+        .filter(([, n]) => n > 0)
+        .sort((a, b) => b[1] - a[1])
+        .map(([m, n]) => `${ENERGY_LABELS[m]} ${n}일`)
+        .join(', ')
+      energyText = `최근 ${energyEntries.length}일 에너지: ${dominant}`
+      if ((counts.sick || 0) >= 2) energyText += `\n⚠️ 아픔 2일+ → 병원/휴식 권유.`
+      if ((counts.foggy || 0) >= 3) energyText += `\n⚠️ 멍함 3일+ → 수면·영양·과부하 점검.`
+      if ((counts.tired || 0) >= 4) energyText += `\n⚠️ 피곤 4일+ → 번아웃 전조 가능성.`
+    }
+
+    // 기분+에너지 교차 분석 (같은 날 조합)
+    const crossObs = []
+    for (const m of moodLogs || []) {
+      if (m.mood && m.energy) {
+        // 특이 조합 찾기
+        if (m.mood === 'happy' && m.energy === 'tired') {
+          crossObs.push(`${m.logged_at.slice(5)}: 기분은 좋은데 몸은 피곤`)
+        }
+        if (m.mood === 'burnout' && (m.energy === 'good' || m.energy === 'normal')) {
+          crossObs.push(`${m.logged_at.slice(5)}: 몸은 멀쩡한데 감정이 번아웃 (원인 감정/환경 쪽)`)
+        }
+        if (m.mood === 'angry' && m.energy === 'sick') {
+          crossObs.push(`${m.logged_at.slice(5)}: 아픔+짜증 (호르몬/컨디션 영향 가능성)`)
+        }
       }
     }
+    const crossText = crossObs.length > 0 ? crossObs.join('\n') : '특이 조합 없음'
 
     // 습관 달성 트렌드
     let habitText
@@ -226,6 +268,12 @@ ${tasksText}
 
 [최근 7일 기분 트렌드]
 ${moodText}
+
+[최근 7일 에너지/몸 상태]
+${energyText}
+
+[기분×에너지 교차 관찰]
+${crossText}
 
 [최근 7일 습관 수행]
 ${habitText}

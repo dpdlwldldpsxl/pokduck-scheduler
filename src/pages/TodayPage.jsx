@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { useTodaySchedule } from '../hooks/useSchedule'
-import { useMood, MOODS } from '../hooks/useMood'
+import { useMood, MOODS, ENERGIES } from '../hooks/useMood'
 import Header from '../components/Header'
 import SpeechBubble from '../components/SpeechBubble'
 import TaskList from '../components/TaskList'
@@ -18,7 +18,7 @@ export default function TodayPage() {
   const todayInfo = getTodayInfo()
   const dailyMsg = getDailyMessage()
   const { items: todaySchedule, loading: scheduleLoading, reload: reloadSchedule } = useTodaySchedule()
-  const { todayMood, setMood: setUserMood } = useMood()
+  const { today: todayLog, setMood: setUserMood, setEnergy: setUserEnergy, clearMood, clearEnergy } = useMood()
   const { playBgm, playSfx } = useSound()
 
   useEffect(() => {
@@ -186,15 +186,20 @@ export default function TodayPage() {
         </h2>
         <div className="mood-picker">
           {MOODS.map((m) => {
-            const selected = todayMood?.mood === m.key
+            const selected = todayLog?.mood === m.key
             return (
               <button
                 key={m.key}
                 type="button"
                 className={`mood-btn ${selected ? 'selected' : ''}`}
                 onClick={() => {
-                  playSfx(selected ? 'cancel' : 'confirm')
-                  setUserMood(m.key)
+                  if (selected) {
+                    playSfx('cancel')
+                    clearMood()
+                  } else {
+                    playSfx('confirm')
+                    setUserMood(m.key)
+                  }
                 }}
                 aria-label={m.label}
               >
@@ -204,8 +209,40 @@ export default function TodayPage() {
             )
           })}
         </div>
-        {todayMood && (
-          <p className="mood-hint">오늘 기분 기록됨 · 폭덕이가 참고할게 🦆</p>
+      </section>
+
+      {/* 오늘 에너지(몸 상태) 1탭 입력 */}
+      <section className="card energy-card">
+        <h2 className="mood-title">
+          몸은 어때? <span className="mood-duck">💪</span>
+        </h2>
+        <div className="mood-picker">
+          {ENERGIES.map((e) => {
+            const selected = todayLog?.energy === e.key
+            return (
+              <button
+                key={e.key}
+                type="button"
+                className={`mood-btn energy-btn ${selected ? 'selected' : ''}`}
+                onClick={() => {
+                  if (selected) {
+                    playSfx('cancel')
+                    clearEnergy()
+                  } else {
+                    playSfx('confirm')
+                    setUserEnergy(e.key)
+                  }
+                }}
+                aria-label={e.label}
+              >
+                <span className="mood-emoji">{e.emoji}</span>
+                <span className="mood-label">{e.label}</span>
+              </button>
+            )
+          })}
+        </div>
+        {(todayLog?.mood || todayLog?.energy) && (
+          <p className="mood-hint">기록됨 · 폭덕이가 분석에 참고할게 🦆</p>
         )}
       </section>
 

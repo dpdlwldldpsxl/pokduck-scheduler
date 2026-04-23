@@ -1,0 +1,81 @@
+import { useState, useEffect, useCallback } from 'react'
+import { supabase } from '../lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
+
+export const MOODS = [
+  { key: 'burnout', emoji: '😫', label: '번아웃', ambience: 'fire' },
+  { key: 'angry', emoji: '😤', label: '짜증', ambience: 'ocean' },
+  { key: 'complex', emoji: '🤔', label: '복잡', ambience: 'forest' },
+  { key: 'calm', emoji: '😌', label: '평온', ambience: 'rain' },
+  { key: 'happy', emoji: '😊', label: '좋음', ambience: 'cafe' },
+]
+
+export const ENERGIES = [
+  { key: 'tired', emoji: '😴', label: '피곤' },
+  { key: 'normal', emoji: '😶', label: '보통' },
+  { key: 'good', emoji: '💪', label: '좋음' },
+  { key: 'foggy', emoji: '😵‍💫', label: '멍함' },
+  { key: 'sick', emoji: '🤕', label: '아픔' },
+]
+
+function todayKst() {
+  const kst = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }))
+  return kst.toISOString().split('T')[0]
+}
+
+export function useMood() {
+  const { user } = useAuth()
+  const [todayMood, setTodayMood] = useState(null)
+  const [recentMoods, setRecentMoods] = useState([])
+
+  const load = useCallback(async () => {
+    if (!user) return
+    const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6)
+    const since = sevenDaysAgo.toISOString().split('T')[0]
+    const { data } = await supabase
+      .from('mood_logs')
+      .select('mood, logged_at, note')
+      .eq('user_id', user.id)
+      .gte('logged_at', since)
+      .order('logged_at', { ascending: false })
+    if (data) {
+      setRecentMoods(data)
+      const t = todayKst()
+      setTodayMood(data.find((m) => m.logged_at === t) || null)
+    }
+  }, [user])
+
+  useEffect(() => { load() }, [load])
+
+  const setMood = async (mood) => {
+    if (!user) return
+    const t = todayKst()
+    const { data } = await supabase
+      .from('mood_logs')
+      .upsert(
+        { user_id: user.id, mood, logged_at: t },
+        { onConflict: 'user_id,logged_at' }
+      )
+      .select()
+      .single()
+    if (data) {
+      setTodayMood(data)
+      setRecentMoods((prev) => {
+        const without = prev.filter((m) => m.logged_at !== t)
+        return [data, ...without].sort((a, b) => b.logged_at.localeCompare(a.logged_at))
+      })
+    }
+    return data
+  }
+
+  const clearToday = async () => {
+    if (!user || !todayMood) return
+    const t = todayKst()
+    await supabase.from('mood_logs').delete().eq('user_id', user.id).eq('logged_at', t)
+    setTodayMood(null)
+    setRecentMoods((prev) => prev.filter((m) => m.logged_at !== t))
+  }
+
+  return { todayMood, recentMoods, setMood, clearToday, reload: load }
+}
