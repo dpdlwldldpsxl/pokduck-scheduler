@@ -2,5 +2,13 @@
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/((?!assets|images|sounds|manifest.json|sw.js).*)", "destination": "/index.html" }
-  ]
+  ],
+  "functions": {
+    "api/coaching.js": {
+      "includeFiles": "docs/coaching-prompts/*.md"
+    },
+    "api/coaching-start.js": {
+      "includeFiles": "docs/coaching-prompts/*.md"
+    }
+  }
 }

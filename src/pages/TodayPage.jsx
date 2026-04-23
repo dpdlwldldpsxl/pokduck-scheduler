@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { useTodaySchedule } from '../hooks/useSchedule'
+import { useMood, MOODS } from '../hooks/useMood'
 import Header from '../components/Header'
 import SpeechBubble from '../components/SpeechBubble'
 import TaskList from '../components/TaskList'
@@ -17,6 +18,7 @@ export default function TodayPage() {
   const todayInfo = getTodayInfo()
   const dailyMsg = getDailyMessage()
   const { items: todaySchedule, loading: scheduleLoading, reload: reloadSchedule } = useTodaySchedule()
+  const { todayMood, setMood: setUserMood } = useMood()
   const { playBgm, playSfx } = useSound()
 
   useEffect(() => {
@@ -175,6 +177,36 @@ export default function TodayPage() {
             <button onClick={signOut} className="logout-btn">로그아웃</button>
           </div>
         </div>
+      </section>
+
+      {/* 오늘 기분 1탭 입력 */}
+      <section className="card mood-card">
+        <h2 className="mood-title">
+          지금 어때? <span className="mood-duck">🦆</span>
+        </h2>
+        <div className="mood-picker">
+          {MOODS.map((m) => {
+            const selected = todayMood?.mood === m.key
+            return (
+              <button
+                key={m.key}
+                type="button"
+                className={`mood-btn ${selected ? 'selected' : ''}`}
+                onClick={() => {
+                  playSfx(selected ? 'cancel' : 'confirm')
+                  setUserMood(m.key)
+                }}
+                aria-label={m.label}
+              >
+                <span className="mood-emoji">{m.emoji}</span>
+                <span className="mood-label">{m.label}</span>
+              </button>
+            )
+          })}
+        </div>
+        {todayMood && (
+          <p className="mood-hint">오늘 기분 기록됨 · 폭덕이가 참고할게 🦆</p>
+        )}
       </section>
 
       {/* 오늘 일정 타임라인 */}

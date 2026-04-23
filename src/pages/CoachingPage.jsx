@@ -53,10 +53,64 @@ export default function CoachingPage() {
     if (!sending) inputRef.current?.focus()
   }, [messages, sending])
 
-  const handleNewConversation = (type) => {
+  const handleNewConversation = async (type) => {
     playSfx('click')
-    // DB에 아직 안 만들고 임시로 세팅. 첫 메시지 보낼 때 생성
+    // 1) 채팅 화면으로 즉시 전환 (conversationId는 null — useMessages 재조회 안 일어남)
     setActiveConv({ id: null, conversation_type: type, title: '새 대화' })
+    setSending(true)
+    addLocal('assistant', '폭덕이가 네 데이터 보고 있어... 🦆')
+
+    let conv = null
+    try {
+      // 2) DB 대화 생성
+      conv = await create(type)
+      if (!conv) throw new Error('대화 생성 실패')
+
+      // 3) 오프닝 API — 성공/실패 무관 DB에 메시지 저장됨 (서버 fallback 있음)
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/coaching-start', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          conversationId: conv.id,
+          conversationType: type,
+        }),
+      })
+
+      // API 완전 실패 시 프론트에서 fallback 메시지 DB에 직접 저장
+      if (!res.ok) {
+        await supabase.from('coaching_messages').insert({
+          conversation_id: conv.id,
+          role: 'assistant',
+          content: '안녕! 오늘 어떻게 지내? 편하게 말해봐 🦆',
+        })
+      }
+
+      // 4) activeConv 갱신 → useMessages 재조회 → DB의 오프닝 메시지 표시
+      setActiveConv(conv)
+      playSfx('receive')
+    } catch (err) {
+      console.error('coaching-start failed:', err)
+      if (conv) {
+        // 대화는 만들어졌는데 치명적 실패 — fallback 메시지라도 DB에 저장
+        try {
+          await supabase.from('coaching_messages').insert({
+            conversation_id: conv.id,
+            role: 'assistant',
+            content: '안녕! 오늘 어떻게 지내? 편하게 말해봐 🦆',
+          })
+        } catch {}
+        setActiveConv(conv)
+      } else {
+        // 대화 생성 자체 실패 — 목록으로 복귀
+        setActiveConv(null)
+      }
+    } finally {
+      setSending(false)
+    }
   }
 
   const handleSend = async () => {
