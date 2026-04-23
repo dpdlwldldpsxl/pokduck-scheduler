@@ -68,9 +68,10 @@ export default function CoachingPage() {
 
   // 코칭 탭 진입 → 앰비언트 자동 재생, 탭 나갈 때(언마운트) 정지
   // 목록/채팅 모두 포함해서 코칭 탭 전체 범위로
+  // 기분 없으면 기본값 = 숲 (차분 + 사고 정리 분위기)
   useEffect(() => {
     const moodData = MOODS.find((m) => m.key === todayLog?.mood)
-    const defaultAmb = moodData?.ambience || 'rain'
+    const defaultAmb = moodData?.ambience || 'forest'
     playAmbience(defaultAmb)
     return () => stopAmbience()
     // eslint-disable-next-line react-hooks/exhaustive-deps
