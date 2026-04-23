@@ -21,8 +21,8 @@ const AMBIENCES = [
   { key: 'fire', emoji: '🔥', label: '불멍', group: 'nature' },
   { key: 'lofi', emoji: '🎧', label: '로파이', group: 'music' },
   { key: 'piano', emoji: '🎹', label: '피아노', group: 'music' },
-  { key: 'future', emoji: '✨', label: '설렘', group: 'music' },
-  { key: 'hiphop', emoji: '💿', label: '플로우', group: 'music' },
+  { key: 'future', emoji: '✨', label: '퓨처베', group: 'music' },
+  { key: 'hiphop', emoji: '💿', label: '힙합', group: 'music' },
   { key: 'edm', emoji: '🎛️', label: 'EDM', group: 'music' },
 ]
 
