@@ -238,16 +238,9 @@ export default function GoalsPage() {
           )}
 
           {habits.length === 0 && !showAddHabit && (
-            <div className="empty-guide">
-              <p className="empty-guide-title">🦆 매일 할 작은 행동이야 (크게 X, 작게 O)</p>
-              <ul className="empty-guide-list">
-                <li>스트레칭 5분</li>
-                <li>물 1L</li>
-                <li>영어 단어 5개</li>
-                <li>저녁 산책</li>
-              </ul>
-              <p className="empty-guide-note">측정 쉬운 걸로. "공부 많이 하기"는 모호해서 체크 어려워.</p>
-            </div>
+            <p style={{ color: '#aaa', fontSize: '14px', textAlign: 'center', padding: '20px 0' }}>
+              매일 하고 싶은 습관을 추가해보세요!
+            </p>
           )}
 
           {habits.map((habit) => {
@@ -295,15 +288,9 @@ export default function GoalsPage() {
           )}
 
           {goals.length === 0 && !showAddGoal && (
-            <div className="empty-guide">
-              <p className="empty-guide-title">🦆 목표 = 작고 측정 가능 + 기한 있음</p>
-              <ul className="empty-guide-list">
-                <li>이번 주 영어 일기 3번</li>
-                <li>5월까지 플랭크 2분 버티기</li>
-                <li>6월 1일까지 드럼 커버 1개 녹음</li>
-              </ul>
-              <p className="empty-guide-note">"영어 잘하기"처럼 모호한 건 비추. 습관이랑 헷갈리면 그냥 습관 탭에 넣어.</p>
-            </div>
+            <p style={{ color: '#aaa', fontSize: '14px', textAlign: 'center', padding: '20px 0' }}>
+              이루고 싶은 목표를 추가해보세요!
+            </p>
           )}
 
           {goals.map((goal) => (

@@ -568,6 +568,51 @@ header {
   transform: scale(0.96);
 }
 
+/* 빈 상태 가이드 카드 (메모/습관/목표 첫 진입 시 안내) */
+.empty-guide {
+  background: #fffef4;
+  border: 1.5px solid #f2ecd7;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-top: 12px;
+}
+
+.empty-guide-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #7a5d0a;
+  margin-bottom: 8px;
+}
+
+.empty-guide-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 10px;
+}
+
+.empty-guide-list li {
+  font-size: 12px;
+  color: #5b4d1f;
+  padding: 3px 0;
+  line-height: 1.4;
+}
+
+.empty-guide-list li::before {
+  content: '• ';
+  color: #b07c0a;
+  font-weight: 700;
+  margin-right: 4px;
+}
+
+.empty-guide-note {
+  font-size: 11px;
+  color: #9b8a5a;
+  line-height: 1.5;
+  border-top: 1px dashed #eadfc0;
+  padding-top: 8px;
+  margin: 0;
+}
+
 /* 축하 팝업 */
 .congrats-overlay {
   position: fixed;

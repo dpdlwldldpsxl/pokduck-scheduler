@@ -238,9 +238,6 @@ export default function TodayPage() {
             )
           })}
         </div>
-        {(todayLog?.mood || todayLog?.energy) && (
-          <p className="mood-hint">기록됨 · 폭덕이가 분석에 참고할게 🦆</p>
-        )}
       </section>
 
       {/* 오늘 일정 타임라인 */}
