@@ -20,7 +20,6 @@ const AMBIENCES = [
   { key: 'forest', emoji: '🌳', label: '숲', group: 'nature' },
   { key: 'fire', emoji: '🔥', label: '불멍', group: 'nature' },
   { key: 'lofi', emoji: '🎧', label: '로파이', group: 'music' },
-  { key: 'beats', emoji: '🎼', label: '비트', group: 'music' },
   { key: 'piano', emoji: '🎹', label: '피아노', group: 'music' },
 ]
 
@@ -65,19 +64,15 @@ export default function CoachingPage() {
     if (!sending) inputRef.current?.focus()
   }, [messages, sending])
 
-  // 채팅 진입 → 앰비언트 재생, 나갈 때 정지
-  const isInChat = !!activeConv
+  // 코칭 탭 진입 → 앰비언트 자동 재생, 탭 나갈 때(언마운트) 정지
+  // 목록/채팅 모두 포함해서 코칭 탭 전체 범위로
   useEffect(() => {
-    if (isInChat) {
-      const moodData = MOODS.find((m) => m.key === todayLog?.mood)
-      const defaultAmb = moodData?.ambience || 'rain'
-      playAmbience(defaultAmb)
-    }
-    return () => {
-      if (isInChat) stopAmbience()
-    }
+    const moodData = MOODS.find((m) => m.key === todayLog?.mood)
+    const defaultAmb = moodData?.ambience || 'rain'
+    playAmbience(defaultAmb)
+    return () => stopAmbience()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isInChat])
+  }, [])
 
   const handleNewConversation = async (type) => {
     playSfx('click')
@@ -225,6 +220,38 @@ export default function CoachingPage() {
     </div>
   }
 
+  // 앰비언트 선택 바 (목록/채팅 공용)
+  const ambienceBar = (
+    <div className="chat-ambience-wrap">
+      <p className="chat-ambience-hint">🦆 배경 사운드 — 기분 따라 골라봐</p>
+      <div className="chat-ambience-row">
+        {AMBIENCES.map((a) => (
+          <button
+            key={a.key}
+            type="button"
+            className={`amb-btn ${ambienceType === a.key ? 'selected' : ''}`}
+            onClick={() => { playSfx('click'); playAmbience(a.key) }}
+            aria-label={a.label}
+            title={a.label}
+          >
+            <span className="amb-emoji">{a.emoji}</span>
+            <span className="amb-label">{a.label}</span>
+          </button>
+        ))}
+        <button
+          type="button"
+          className={`amb-btn amb-off ${ambienceType === null ? 'selected' : ''}`}
+          onClick={() => { playSfx('cancel'); stopAmbience() }}
+          aria-label="끄기"
+          title="사운드 끄기"
+        >
+          <span className="amb-emoji">🔇</span>
+          <span className="amb-label">끄기</span>
+        </button>
+      </div>
+    </div>
+  )
+
   // 대화 목록 화면
   if (!activeConv) {
     return (
@@ -235,6 +262,7 @@ export default function CoachingPage() {
             여긴 <strong>코칭 탭</strong>이야. 데이터 먼저 보고 내가 말 걸어줄게 🦆
           </p>
         </div>
+        {ambienceBar}
         <div style={{ padding: '20px 16px 0' }}>
           <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '4px' }}>🤖 AI 코칭</h2>
           <p style={{ fontSize: '13px', color: '#888', marginBottom: '16px' }}>폭덕이에게 뭐든 물어봐!</p>
@@ -297,25 +325,7 @@ export default function CoachingPage() {
         </span>
       </div>
 
-      {/* 앰비언트 선택 바 (유저 결정권) */}
-      <div className="chat-ambience-wrap">
-        <p className="chat-ambience-hint">🦆 배경 사운드 — 기분 따라 골라봐</p>
-        <div className="chat-ambience-row">
-          {AMBIENCES.map((a) => (
-            <button
-              key={a.key}
-              type="button"
-              className={`amb-btn ${ambienceType === a.key ? 'selected' : ''}`}
-              onClick={() => { playSfx('click'); playAmbience(a.key) }}
-              aria-label={a.label}
-              title={a.label}
-            >
-              <span className="amb-emoji">{a.emoji}</span>
-              <span className="amb-label">{a.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
+      {ambienceBar}
 
       <div className="chat-messages">
         {messages.length === 0 && (

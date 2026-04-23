@@ -14,10 +14,24 @@ const SFX_VOLUMES = {
 
 // Layer 2: 앰비언트 (공간감 배경음 + 집중 음악). MP3 포맷, 모두 루프.
 // 자연(rain/beach/forest/fire) — 복기/쉼
-// 음악(lofi/beats/piano) — 집중/기분 전환
-export const AMBIENCE_TRACKS = ['rain', 'beach', 'forest', 'fire', 'lofi', 'beats', 'piano']
+// 음악(lofi/piano) — 집중/기분 전환
+// lofi 슬롯은 2개 파일 랜덤 재생 (같은 분위기 반복 방지)
+const AMBIENCE_FILES = {
+  rain: ['rain.mp3'],
+  beach: ['beach.mp3'],
+  forest: ['forest.mp3'],
+  fire: ['fire.mp3'],
+  lofi: ['lofi.mp3', 'beats.mp3'], // 둘 다 로파이 장르 — 호출할 때마다 랜덤
+  piano: ['piano.mp3'],
+}
+export const AMBIENCE_TRACKS = Object.keys(AMBIENCE_FILES)
 const AMBIENCE_VOLUME = 0.45
-const AMBIENCE_PATH = (name) => `/sounds/${name}.mp3`
+const AMBIENCE_PATH = (name) => {
+  const files = AMBIENCE_FILES[name]
+  if (!files || files.length === 0) return `/sounds/${name}.mp3`
+  const pick = files[Math.floor(Math.random() * files.length)]
+  return `/sounds/${pick}`
+}
 const FADE_MS = 700
 
 // setInterval 기반 선형 페이드
