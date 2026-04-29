@@ -16,6 +16,25 @@ const PRESET_ACADEMIES = [
 
 const DAYS = ['일', '월', '화', '수', '목', '금', '토']
 
+// 요일 프리셋 — day_of_week 인덱스 (0=일, 1=월, ...)
+const DAY_PRESETS = [
+  { label: '평일', days: [1, 2, 3, 4, 5] },
+  { label: '주말', days: [6, 0] },
+  { label: '매일', days: [1, 2, 3, 4, 5, 6, 0] },
+  { label: '월수금', days: [1, 3, 5] },
+  { label: '화목', days: [2, 4] },
+]
+
+// 시간 프리셋 (start, end)
+const TIME_PRESETS = [
+  { label: '출근 9-18', start: '09:00', end: '18:00' },
+  { label: '출근 10-19', start: '10:00', end: '19:00' },
+  { label: '오전 9-12', start: '09:00', end: '12:00' },
+  { label: '오후 14-17', start: '14:00', end: '17:00' },
+  { label: '저녁 19-22', start: '19:00', end: '22:00' },
+  { label: '학원 1h', start: '20:00', end: '21:00' },
+]
+
 const COLORS = ['#d4860a', '#c0397a', '#7a3ac0', '#3a5fc0', '#555555', '#7cc47c', '#e05555', '#2a9d8f', '#e76f51']
 const ICONS = ['📚', '🔤', '🥁', '🎧', '🧘', '💼', '🤝', '🙋', '🎨', '🎵', '💻', '🏃', '🍽️', '💅', '🛌']
 
@@ -230,7 +249,17 @@ export default function SchedulePage() {
 
         {showAddItem ? (
           <div className="add-form">
-            <select className="schedule-select" value={itemAcademy} onChange={(e) => setItemAcademy(e.target.value)}>
+            <select
+              className="schedule-select"
+              value={itemAcademy}
+              onChange={(e) => {
+                const id = e.target.value
+                setItemAcademy(id)
+                // 활동 선택하면 일정 이름 자동 채움 (이미 입력한 게 있으면 유지)
+                const academy = academies.find((a) => a.id === id)
+                if (academy && !itemTitle.trim()) setItemTitle(academy.name)
+              }}
+            >
               <option value="">활동 선택</option>
               {academies.map((a) => (
                 <option key={a.id} value={a.id}>{a.icon} {a.name}</option>
@@ -239,10 +268,36 @@ export default function SchedulePage() {
 
             <input type="text" className="schedule-input" placeholder="일정 이름 (예: 영어 회화 수업)" value={itemTitle} onChange={(e) => setItemTitle(e.target.value)} />
 
-            <p style={{ fontSize: '12px', color: '#888', marginBottom: '-4px' }}>요일 (여러 개 선택 가능)</p>
+            <p style={{ fontSize: '12px', color: '#888', marginBottom: '-4px' }}>요일 (여러 개 선택하면 한 번에 등록돼)</p>
+            <div className="schedule-preset-row">
+              {DAY_PRESETS.map((preset) => (
+                <button
+                  key={preset.label}
+                  type="button"
+                  className="schedule-preset-chip"
+                  onClick={() => { playSfx('click'); setSelectedDays(preset.days) }}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
             <div className="day-picker">
               {DAYS.map((d, i) => (
                 <button key={i} className={`day-btn${selectedDays.includes(i) ? ' selected' : ''}`} onClick={() => toggleDay(i)}>{d}</button>
+              ))}
+            </div>
+
+            <p style={{ fontSize: '12px', color: '#888', marginTop: '8px', marginBottom: '-4px' }}>시간 프리셋</p>
+            <div className="schedule-preset-row">
+              {TIME_PRESETS.map((preset) => (
+                <button
+                  key={preset.label}
+                  type="button"
+                  className="schedule-preset-chip"
+                  onClick={() => { playSfx('click'); setItemStart(preset.start); setItemEnd(preset.end) }}
+                >
+                  {preset.label}
+                </button>
               ))}
             </div>
 
@@ -252,7 +307,9 @@ export default function SchedulePage() {
             </div>
 
             <div style={{ display: 'flex', gap: '8px' }}>
-              <button className="nickname-btn" onClick={handleAddItem} disabled={!itemTitle.trim() || !itemAcademy || selectedDays.length === 0}>일정 추가</button>
+              <button className="nickname-btn" onClick={handleAddItem} disabled={!itemTitle.trim() || !itemAcademy || selectedDays.length === 0}>
+                {selectedDays.length > 1 ? `${selectedDays.length}개 일정 한 번에 추가` : '일정 추가'}
+              </button>
               <button className="nickname-btn" style={{ background: '#eee', color: '#666' }} onClick={() => setShowAddItem(false)}>취소</button>
             </div>
           </div>
