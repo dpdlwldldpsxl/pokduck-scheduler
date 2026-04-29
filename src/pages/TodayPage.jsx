@@ -77,10 +77,17 @@ export default function TodayPage() {
   }
 
   const loadTasks = async () => {
+    // 오늘 KST 자정 기준 (어제 이전 완료된 할 일은 숨김)
+    const kstNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }))
+    kstNow.setHours(0, 0, 0, 0)
+    const todayStart = kstNow.toISOString()
+
+    // 미완료(is_done=false) OR 오늘 완료(completed_at >= todayStart)
     const { data } = await supabase
       .from('tasks')
       .select('*')
       .eq('user_id', user.id)
+      .or(`is_done.eq.false,completed_at.gte.${todayStart}`)
       .order('created_at', { ascending: true })
     if (data) setTasks(data)
   }
