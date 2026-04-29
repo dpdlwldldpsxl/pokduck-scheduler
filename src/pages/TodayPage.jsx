@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
@@ -38,13 +38,17 @@ export default function TodayPage() {
   const [message, setMessage] = useState(dailyMsg.msg)
   const [mood, setMood] = useState(dailyMsg.mood)
   const [showCongrats, setShowCongrats] = useState(false)
-  const [suggestion, setSuggestion] = useState(null)
 
-  // 스마트 추천 엔진 — 데이터 + 시간대 + 뇌과학 리듬 기반
-  useEffect(() => {
-    if (scheduleLoading) return
+  // 안정 키 (배열 레퍼런스 대신 ID 문자열로 의존)
+  const dueIdsKey = (dueForReview || []).map((n) => n.id).join(',')
+  const habitIdsKey = (habits || []).map((h) => h.id).join(',')
+  const habitLogsKey = (todayHabitLogs || []).join(',')
+  const scheduleKey = (todaySchedule || []).map((s) => s.id).join(',')
 
-    const next = getSmartSuggestion({
+  // 스마트 추천 엔진 — useMemo로 무한 렌더 방지
+  const suggestion = useMemo(() => {
+    if (scheduleLoading) return null
+    return getSmartSuggestion({
       displayName: profile?.display_name || '너',
       todaySchedule,
       dueStudyNotes: dueForReview || [],
@@ -53,8 +57,17 @@ export default function TodayPage() {
       todayMood: todayLog?.mood || null,
       todayEnergy: todayLog?.energy || null,
     })
-    setSuggestion(next)
-  }, [todaySchedule, scheduleLoading, dueForReview, habits, todayHabitLogs, todayLog, profile])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    scheduleLoading,
+    scheduleKey,
+    dueIdsKey,
+    habitIdsKey,
+    habitLogsKey,
+    todayLog?.mood,
+    todayLog?.energy,
+    profile?.display_name,
+  ])
 
   useEffect(() => {
     loadProfile()
@@ -77,19 +90,25 @@ export default function TodayPage() {
   }
 
   const loadTasks = async () => {
-    // 오늘 KST 자정 기준 (어제 이전 완료된 할 일은 숨김)
-    const kstNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }))
-    kstNow.setHours(0, 0, 0, 0)
-    const todayStart = kstNow.toISOString()
-
-    // 미완료(is_done=false) OR 오늘 완료(completed_at >= todayStart)
+    // 전체 가져와서 클라이언트에서 필터 (Supabase or() ISO 타임스탬프 이슈 회피)
     const { data } = await supabase
       .from('tasks')
       .select('*')
       .eq('user_id', user.id)
-      .or(`is_done.eq.false,completed_at.gte.${todayStart}`)
       .order('created_at', { ascending: true })
-    if (data) setTasks(data)
+    if (!data) return
+
+    const kstNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }))
+    kstNow.setHours(0, 0, 0, 0)
+    const todayStart = kstNow.getTime()
+
+    // 미완료는 항상 보임 (이월), 완료는 오늘 완료된 것만 보임
+    const filtered = data.filter((t) => {
+      if (!t.is_done) return true
+      if (!t.completed_at) return false
+      return new Date(t.completed_at).getTime() >= todayStart
+    })
+    setTasks(filtered)
   }
 
   const handleAdd = async (text, category) => {
