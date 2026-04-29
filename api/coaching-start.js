@@ -45,6 +45,19 @@ function loadPromptFile(name) {
   }
 }
 
+function loadPersonaFile() {
+  try {
+    return fs.readFileSync(
+      path.join(process.cwd(), 'docs', 'PERSONA.md'),
+      'utf-8'
+    )
+  } catch {
+    return ''
+  }
+}
+
+const PERSONA_PROMPT = loadPersonaFile()
+
 const TYPE_PROMPTS = {
   general: loadPromptFile('general'),
   schedule: loadPromptFile('schedule'),
@@ -265,6 +278,9 @@ export default async function handler(req, res) {
     const timeGuide = TIME_OPENER_GUIDES[timeOfDay]
 
     const prompt = `${BASE_PROMPT}
+
+# ━━━ 베이스 페르소나 (모든 대화 공통) ━━━
+${PERSONA_PROMPT}
 
 # ━━━ 시간대 ━━━
 ${timeGuide}

@@ -5,10 +5,10 @@
   ],
   "functions": {
     "api/coaching.js": {
-      "includeFiles": "docs/coaching-prompts/*.md"
+      "includeFiles": "docs/**/*.md"
     },
     "api/coaching-start.js": {
-      "includeFiles": "docs/coaching-prompts/*.md"
+      "includeFiles": "docs/**/*.md"
     }
   }
 }
